@@ -105,10 +105,10 @@ jobs:
             ${{ steps.image.outputs.name }}:${{ steps.image.outputs.revision }}
           labels: |
             maintainer=rheodev <https://github.com/rheodev>
-            description=AI Space - AI services and team management
+            description=Sub2API - AI services and team management
             org.opencontainers.image.authors=rheodev
-            org.opencontainers.image.title=AI Space
-            org.opencontainers.image.description=AI Space - AI services and team management
+            org.opencontainers.image.title=Sub2API
+            org.opencontainers.image.description=Sub2API - AI services and team management
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}

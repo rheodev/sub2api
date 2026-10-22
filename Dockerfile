@@ -114,10 +114,10 @@ FROM ${ALPINE_IMAGE}
 
 # Labels
 LABEL maintainer="rheodev <https://github.com/rheodev>"
-LABEL description="AI Space - AI services and team management"
+LABEL description="Sub2API - AI services and team management"
 LABEL org.opencontainers.image.authors="rheodev"
-LABEL org.opencontainers.image.title="AI Space"
-LABEL org.opencontainers.image.description="AI Space - AI services and team management"
+LABEL org.opencontainers.image.title="Sub2API"
+LABEL org.opencontainers.image.description="Sub2API - AI services and team management"
 LABEL org.opencontainers.image.source="https://github.com/rheodev/sub2api"
 LABEL org.opencontainers.image.url="https://github.com/rheodev/sub2api"
 
