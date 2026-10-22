@@ -805,6 +805,7 @@ export default {
 
   // Profile
   profile: {
+    tabs: { basics: 'Profile', security: 'Security', notifications: 'Notifications' },
     title: 'Profile Settings',
     description: 'Manage your account information and settings',
     accountBalance: 'Account Balance',
@@ -819,7 +820,7 @@ export default {
     linkedProfileSources: 'Profile Sources',
     linkedProfileSourcesDescription: 'Some profile details may stay synced from third-party sign-in methods.',
     securityTitle: 'Security Settings',
-    securityDescription: 'Password, two-factor authentication, and alerts live in the right rail.',
+    securityDescription: 'Manage your password, two-factor authentication, and sign-in methods.',
     administrator: 'Administrator',
     user: 'User',
     username: 'Username',

@@ -14,7 +14,8 @@ const settings = {
   channel_monitor_enabled: true, channel_monitor_default_interval_seconds: 60, version: 'preview',
 }
 
-async function prepare(page: Page, role?: string, dark = false, populated = false) {
+async function prepare(page: Page, role?: string, dark = false, populated = false, overrides: Record<string, unknown> = {}) {
+  const publicSettings = { ...settings, ...overrides }
   const currentUser = { ...user, role: role || 'user' }
   await page.addInitScript(({ currentUser, role, settings, dark }) => {
     localStorage.setItem('sub2api_locale', 'zh')
@@ -25,13 +26,13 @@ async function prepare(page: Page, role?: string, dark = false, populated = fals
       localStorage.setItem(`${role === 'admin' ? 'admin' : 'user'}_guide_91_${role}_v4_interactive`, 'true')
     }
     Object.assign(window, { __APP_CONFIG__: settings })
-  }, { currentUser, role, settings, dark })
+  }, { currentUser, role, settings: publicSettings, dark })
   await page.route('**/setup/status', route => route.fulfill({ json: { code: 0, data: { needs_setup: false } } }))
   await page.route('**/api/v1/**', async route => {
     const path = new URL(route.request().url()).pathname.replace('/api/v1', '')
     let data: unknown = {}
     if (path === '/auth/me') data = currentUser
-    else if (path === '/settings/public' || path === '/admin/settings') data = settings
+    else if (path === '/settings/public' || path === '/admin/settings') data = publicSettings
     else if (path === '/admin/compliance') data = { required: false }
     else if (path.endsWith('/all') || path.includes('/subscriptions/active') || path.includes('/announcements') || path.includes('/oauth/providers') || path === '/admin/payment/providers' || path === '/groups/available') data = []
     else if (path === '/usage/dashboard/stats') data = { total_api_keys: 3, active_api_keys: 2, today_requests: 128, total_requests: 2048, today_actual_cost: 0.125, today_cost: 0.25, total_actual_cost: 4.5, total_cost: 9, today_tokens: 18000, total_tokens: 256000, rpm: 12, tpm: 3500, average_duration_ms: 1420, by_platform: [] }
@@ -208,6 +209,65 @@ test('populated records, keyboard sorting and mobile sorting', async ({ page }, 
   await page.goto('/admin/accounts')
   await expect(page.getByText(sampleAccounts[0].name, { exact: true })).toBeVisible()
   await capture(page, 'accounts-populated', info.project.name)
+  expect(errors).toEqual([])
+})
+
+test('profile sections preserve drafts and adapt to theme and viewport', async ({ page }, info) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await prepare(page, 'user', false, false, {
+    balance_low_notify_enabled: true, balance_low_notify_threshold: 5,
+  })
+  let english = false
+  // The dev server may inject real settings into HTML after the init script.
+  await page.route('**/profile', async route => {
+    const response = await route.fetch()
+    let body = (await response.text()).replace(/<script>window\.__APP_CONFIG__=.*?;<\/script>/s, '')
+    if (english) body = body.replace('</head>', '<script>localStorage.setItem("sub2api_locale", "en")</script></head>')
+    await route.fulfill({ response, body })
+  })
+  await page.route('**/api/v1/user/totp/status*', route => route.fulfill({ json: {
+    code: 0, data: { enabled: false, feature_enabled: true },
+  } }))
+  await page.goto('/profile')
+  const username = page.getByRole('textbox', { name: '用户名', exact: true })
+  await expect(username).toHaveValue('Preview User')
+  await username.fill('尚未保存的用户名')
+  await capture(page, 'profile-basics', info.project.name)
+  await page.getByRole('tab', { name: '账号安全', exact: true }).click()
+  const password = page.getByLabel('当前密码', { exact: true })
+  await password.fill('local-unsaved-draft')
+  await expect(page.getByRole('heading', { name: '修改密码', exact: true })).toBeVisible()
+  await capture(page, 'profile-security', info.project.name)
+  await page.getByRole('tab', { name: '通知设置', exact: true }).click()
+  await expect(page.locator('#balance-notify-threshold')).toBeVisible()
+  await page.locator('#balance-notify-threshold').fill('12')
+  await capture(page, 'profile-notifications', info.project.name)
+  await page.getByRole('tab', { name: '基础资料', exact: true }).click()
+  await expect(username).toHaveValue('尚未保存的用户名')
+  await page.getByRole('tab', { name: '基础资料', exact: true }).press('ArrowRight')
+  await expect(page.getByRole('tab', { name: '账号安全', exact: true })).toBeFocused()
+  await expect(password).toHaveValue('local-unsaved-draft')
+  await page.getByRole('tab', { name: '账号安全', exact: true }).press('End')
+  await expect(page.locator('#balance-notify-threshold')).toHaveValue('12')
+  await page.evaluate(() => document.documentElement.classList.add('dark'))
+  await capture(page, 'profile-notifications-dark', info.project.name)
+  await page.getByRole('tab', { name: '基础资料', exact: true }).click()
+  await capture(page, 'profile-basics-dark', info.project.name)
+
+  english = true
+  const longUser = {
+    ...user, username: 'LongDisplayName'.repeat(6),
+    email: `${'long-address-'.repeat(5)}@example.com`, email_bound: true,
+  }
+  await page.route('**/api/v1/auth/me*', route => route.fulfill({ json: { code: 0, data: longUser } }))
+  await page.setViewportSize({ width: info.project.name === 'mobile' ? 320 : 900, height: 1000 })
+  await page.reload()
+  await expect(page.getByRole('textbox', { name: 'Username', exact: true })).toHaveValue(longUser.username)
+  await expect(page.locator('[data-testid="profile-overview-hero"]')).toContainText(longUser.email)
+  await capture(page, 'profile-basics-english-long', info.project.name)
+  await page.getByRole('tab', { name: 'Security', exact: true }).click()
+  await capture(page, 'profile-security-english-narrow', info.project.name)
   expect(errors).toEqual([])
 })
 

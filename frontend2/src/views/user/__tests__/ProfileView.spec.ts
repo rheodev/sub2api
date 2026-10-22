@@ -73,7 +73,7 @@ describe('ProfileView', () => {
     })
   })
 
-  it('renders the simplified single-column profile shell without separate stat cards', async () => {
+  it('groups settings into accessible panels and hides unavailable notifications', async () => {
     const wrapper = mount(ProfileView, {
       global: {
         stubs: {
@@ -83,6 +83,10 @@ describe('ProfileView', () => {
           ProfileBalanceNotifyCard: { template: '<div data-testid="profile-balance-notify-card" />' },
           ProfilePasswordForm: { template: '<div data-testid="profile-password-form" />' },
           ProfileTotpCard: { template: '<div data-testid="profile-totp-card" />' },
+          ProfileAvatarCard: true,
+          ProfileEditForm: true,
+          ProfileIdentityBindingsSection: true,
+          ProfilePasskeyCard: true,
           Icon: true
         }
       }
@@ -95,5 +99,13 @@ describe('ProfileView', () => {
     expect(wrapper.get('[data-testid="profile-shell"]').html()).toContain('profile-info-card')
     expect(wrapper.get('[data-testid="profile-shell"]').html()).toContain('profile-password-form')
     expect(wrapper.get('[data-testid="profile-shell"]').html()).toContain('profile-totp-card')
+    expect(wrapper.findAll('[role="tab"]')).toHaveLength(2)
+    expect((wrapper.get('#profile-panel-basics').element as HTMLElement).style.display).toBe('')
+    expect((wrapper.get('#profile-panel-security').element as HTMLElement).style.display).toBe('none')
+    await wrapper.get('#profile-tab-security').trigger('click')
+    expect((wrapper.get('#profile-panel-security').element as HTMLElement).style.display).toBe('')
+    expect((wrapper.get('#profile-panel-basics').element as HTMLElement).style.display).toBe('none')
+    await wrapper.get('#profile-tab-security').trigger('keydown', { key: 'Home' })
+    expect(wrapper.get('#profile-tab-basics').attributes('aria-selected')).toBe('true')
   })
 })

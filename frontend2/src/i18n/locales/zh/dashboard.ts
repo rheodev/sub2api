@@ -809,6 +809,7 @@ export default {
 
   // Profile
   profile: {
+    tabs: { basics: '基础资料', security: '账号安全', notifications: '通知设置' },
     title: '个人设置',
     description: '管理您的账户信息和设置',
     accountBalance: '账户余额',
@@ -823,7 +824,7 @@ export default {
     linkedProfileSources: '资料来源',
     linkedProfileSourcesDescription: '部分头像和昵称可能同步自第三方登录方式。',
     securityTitle: '安全设置',
-    securityDescription: '密码、双因素认证和通知提醒集中放在右侧。',
+    securityDescription: '管理密码、双因素认证和登录方式。',
     administrator: '管理员',
     user: '用户',
     username: '用户名',

@@ -32,7 +32,7 @@
       </div>
 
       <!-- 2FA Enabled -->
-      <div v-else-if="status?.enabled" class="flex items-center justify-between">
+      <div v-else-if="status?.enabled" class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
           <div class="flex-shrink-0 rounded-full bg-green-100 p-3 dark:bg-green-900/30">
             <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -58,7 +58,7 @@
       </div>
 
       <!-- 2FA Not Enabled -->
-      <div v-else class="flex items-center justify-between">
+      <div v-else class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
           <div class="flex-shrink-0 rounded-full bg-gray-100 p-3 dark:bg-dark-700">
             <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

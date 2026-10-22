@@ -76,7 +76,7 @@ describe('ProfileInfoCard', () => {
     { profile_sources: { avatar: { provider: 'dingtalk' }, username: { provider: 'dingtalk' } } },
   ])('shows DingTalk as the synchronized profile source', (sources) => {
     const wrapper = mount(ProfileInfoCard, {
-      props: { user: createUser(sources), dingtalkEnabled: true },
+      props: { user: createUser(sources) },
       global: { stubs: { Icon: true } },
     })
     expect(wrapper.text()).toContain('Avatar synced from DingTalk')
@@ -99,8 +99,6 @@ describe('ProfileInfoCard', () => {
     expect(wrapper.text()).toContain('alice@example.com')
     expect(wrapper.text()).toContain('alice')
     expect(wrapper.text()).toContain('User')
-    expect(wrapper.get('[data-testid="profile-basics-panel"]').exists()).toBe(true)
-    expect(wrapper.get('[data-testid="profile-auth-bindings-panel"]').exists()).toBe(true)
   })
 
   it('renders third-party source hints from profile sources', () => {
@@ -186,7 +184,7 @@ describe('ProfileInfoCard', () => {
     expect(wrapper.text()).not.toContain('legacy-user@wechat-connect.invalid')
   })
 
-  it('renders the approved overview hero and two-column content shell', () => {
+  it('renders account facts as a compact definition list', () => {
     const wrapper = mount(ProfileInfoCard, {
       props: {
         user: createUser()
@@ -202,10 +200,7 @@ describe('ProfileInfoCard', () => {
     expect(wrapper.get('[data-testid="profile-overview-metric-balance"]').text()).toContain('Account Balance')
     expect(wrapper.get('[data-testid="profile-overview-metric-concurrency"]').text()).toContain('Concurrency Limit')
     expect(wrapper.get('[data-testid="profile-overview-metric-member-since"]').text()).toContain('Member Since')
-    expect(wrapper.find('[data-testid="profile-info-summary-grid"]').exists()).toBe(false)
-    expect(wrapper.get('[data-testid="profile-main-column"]').exists()).toBe(true)
-    expect(wrapper.get('[data-testid="profile-side-column"]').exists()).toBe(true)
-    expect(wrapper.get('[data-testid="profile-basics-panel"]').exists()).toBe(true)
-    expect(wrapper.get('[data-testid="profile-auth-bindings-panel"]').exists()).toBe(true)
+    expect(wrapper.find('dl').exists()).toBe(true)
+    expect(wrapper.findAll('dt')).toHaveLength(3)
   })
 })
