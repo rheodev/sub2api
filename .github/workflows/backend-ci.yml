@@ -45,23 +45,38 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        frontend: [frontend, frontend2]
     steps:
       - uses: actions/checkout@v6
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: 9.15.9
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          cache-dependency-path: ${{ matrix.frontend }}/pnpm-lock.yaml
       - name: Install frontend dependencies
-        working-directory: frontend
+        working-directory: ${{ matrix.frontend }}
         run: pnpm install --frozen-lockfile
       - name: Frontend typecheck and critical vitest
-        run: make test-frontend
+        run: make test-frontend FRONTEND_APP=${{ matrix.frontend }}
+
+      - name: Build frontend
+        run: make build-frontend FRONTEND_APP=${{ matrix.frontend }}
+      - name: Install browser for frontend2
+        if: matrix.frontend == 'frontend2'
+        working-directory: frontend2
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Frontend2 browser smoke tests
+        if: matrix.frontend == 'frontend2'
+        working-directory: frontend2
+        run: pnpm run test:e2e
 
   golangci-lint:
     runs-on: ubuntu-latest

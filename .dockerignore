@@ -33,6 +33,13 @@ build/
 
 # Node modules (will be installed in container)
 frontend/node_modules/
+frontend2/node_modules/
+frontend2/dist/
+frontend2/coverage/
+frontend2/test-results/
+frontend2/playwright-report/
+frontend2/.impeccable/review/
+.pnpm-store/
 node_modules/
 
 # Go build cache (will be built in container)

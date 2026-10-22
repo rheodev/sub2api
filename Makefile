@@ -1,5 +1,10 @@
 .PHONY: build build-backend build-frontend test test-backend test-frontend test-frontend-critical
 
+FRONTEND_APP ?= frontend
+ifeq ($(filter $(FRONTEND_APP),frontend frontend2),)
+$(error FRONTEND_APP must be frontend or frontend2)
+endif
+
 FRONTEND_CRITICAL_VITEST := \
 	src/i18n/__tests__/localeKeyCompleteness.spec.ts \
 	src/api/__tests__/client.spec.ts \
@@ -26,7 +31,9 @@ FRONTEND_CRITICAL_VITEST := \
 	src/components/admin/channel/__tests__/PricingEntryCard.modelDefaultPrice.spec.ts
 
 # 一键编译前后端
-build: build-backend build-frontend
+build: build-backend
+
+build-backend: build-frontend
 
 # 编译后端（复用 backend/Makefile）
 build-backend:
@@ -34,7 +41,10 @@ build-backend:
 
 # 编译前端（需要已安装依赖）
 build-frontend:
-	@pnpm --dir frontend run build
+	@pnpm --dir $(FRONTEND_APP) run build
+ifeq ($(FRONTEND_APP),frontend2)
+	@node deploy/stage-frontend.mjs
+endif
 
 # 运行测试（后端 + 前端）
 test: test-backend test-frontend
@@ -43,9 +53,14 @@ test-backend:
 	@$(MAKE) -C backend test
 
 test-frontend:
-	@pnpm --dir frontend run lint:check
-	@pnpm --dir frontend run typecheck
+	@pnpm --dir $(FRONTEND_APP) run lint:check
+	@pnpm --dir $(FRONTEND_APP) run typecheck
 	@$(MAKE) test-frontend-critical
 
 test-frontend-critical:
-	@pnpm --dir frontend exec vitest run $(FRONTEND_CRITICAL_VITEST)
+	@pnpm --dir $(FRONTEND_APP) exec vitest run $(FRONTEND_CRITICAL_VITEST)
+ifeq ($(FRONTEND_APP),frontend2)
+	@pnpm --dir frontend2 run check:parity
+	@pnpm --dir frontend2 exec vitest run src/components/layout/__tests__/workspace.spec.ts src/composables/__tests__/useTableDensity.spec.ts
+	@node --test deploy/tests/stage-frontend.test.mjs
+endif

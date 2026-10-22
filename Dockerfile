@@ -23,13 +23,15 @@ ARG NPM_CONFIG_REGISTRY=
 FROM --platform=${BUILDPLATFORM} ${NODE_IMAGE} AS frontend-builder
 ARG NPM_CONFIG_REGISTRY
 
-WORKDIR /app/frontend
+ARG FRONTEND_APP=frontend
+RUN case "$FRONTEND_APP" in frontend|frontend2) ;; *) echo "Invalid FRONTEND_APP" >&2; exit 1 ;; esac
+WORKDIR /app/${FRONTEND_APP}
 
 # Install pnpm (pinned to v9 to match CI and keep builds reproducible)
-RUN corepack enable && corepack prepare pnpm@9 --activate
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
 # Install dependencies first (better caching)
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
+COPY ${FRONTEND_APP}/package.json ${FRONTEND_APP}/pnpm-lock.yaml ./
 RUN --mount=type=cache,id=sub2api-pnpm-store,target=/root/.local/share/pnpm/store \
     if [ -n "${NPM_CONFIG_REGISTRY}" ]; then pnpm config set registry "${NPM_CONFIG_REGISTRY}"; fi && \
     pnpm install --frozen-lockfile --prefer-offline
@@ -37,11 +39,14 @@ RUN --mount=type=cache,id=sub2api-pnpm-store,target=/root/.local/share/pnpm/stor
 # Copy frontend source and build.
 # LegalDocumentView.vue (admin-compliance gate) build-time imports
 # ../../../../docs/legal/*.md?raw, so docs/legal/ must sit beside frontend/
-# in the image (WORKDIR /app/frontend -> resolves to /app/docs/legal/*.md).
+# in the image at /app/docs/legal/*.md for either frontend selection.
 # Copy only that subtree to keep the build dependency minimal.
-COPY frontend/ ./
+COPY ${FRONTEND_APP}/ ./
 COPY docs/legal/ /app/docs/legal/
-RUN pnpm run build
+RUN pnpm run build && \
+    if [ "$FRONTEND_APP" = "frontend2" ]; then \
+      mkdir -p /app/backend/internal/web/dist && cp -a dist/. /app/backend/internal/web/dist/; \
+    fi
 
 # -----------------------------------------------------------------------------
 # Stage 2: Backend Builder

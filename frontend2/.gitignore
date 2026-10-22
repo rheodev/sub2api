@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+.impeccable/review/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
