@@ -7,6 +7,7 @@ import enSettings from "@/i18n/locales/en/admin/settings";
 import zhCommon from "@/i18n/locales/zh/common";
 import zhSettings from "@/i18n/locales/zh/admin/settings";
 import SettingsView from "../SettingsView.vue";
+import { listPlatformIds } from "@/constants/platformCatalog";
 
 const {
   getSettings,
@@ -2016,7 +2017,7 @@ describe("admin SettingsView platform quota matrix", () => {
     getProviders.mockResolvedValue({ data: [] });
   });
 
-  it("从 baseSettings 加载默认平台配额数据并在 Users tab 渲染 6 平台行", async () => {
+  it("从 baseSettings 加载默认平台配额数据并在 Users tab 渲染全部平台行", async () => {
     const wrapper = mountView();
     await flushPromises();
     await openUsersTab(wrapper);
@@ -2029,10 +2030,12 @@ describe("admin SettingsView platform quota matrix", () => {
     expect(html).toContain("openai");
     expect(html).toContain("gemini");
     expect(html).toContain("antigravity");
-    expect(html).toContain("typesafe");
+    for (const platform of listPlatformIds()) {
+      expect(html).toContain(platform);
+    }
   });
 
-  it("保存时 updateSettings payload 应包含嵌套 default_platform_quotas 对象（含全 6 平台）", async () => {
+  it("保存时 updateSettings payload 应包含嵌套 default_platform_quotas 对象（含全部平台）", async () => {
     const wrapper = mountView();
     await flushPromises();
     await openUsersTab(wrapper);
@@ -2048,7 +2051,8 @@ describe("admin SettingsView platform quota matrix", () => {
     // 应携带嵌套对象，而非扁平字段
     expect(payload).toHaveProperty("default_platform_quotas");
     const quotas = payload["default_platform_quotas"] as Record<string, unknown>;
-    const platforms = ["anthropic", "openai", "gemini", "antigravity", "grok", "typesafe"];
+    const platforms = listPlatformIds();
+    expect(Object.keys(quotas).sort()).toEqual([...platforms].sort());
     for (const p of platforms) {
       expect(quotas).toHaveProperty(p);
       const pq = quotas[p] as Record<string, unknown>;
@@ -2062,7 +2066,7 @@ describe("admin SettingsView platform quota matrix", () => {
     expect(payload).not.toHaveProperty("default_platform_quota_openai_weekly");
   });
 
-  it("加载后 form.default_platform_quotas 含全 6 平台，从嵌套 JSON 正确读取数值", async () => {
+  it("加载后 form.default_platform_quotas 含全部平台，从嵌套 JSON 正确读取数值", async () => {
     getSettings.mockResolvedValueOnce({
       ...baseSettingsResponse,
       default_platform_quotas: {
@@ -2088,6 +2092,23 @@ describe("admin SettingsView platform quota matrix", () => {
     expect(quotas["gemini"]).toEqual({ daily: null, weekly: null, monthly: null });
     expect(quotas["antigravity"]).toEqual({ daily: null, weekly: null, monthly: null });
     expect(quotas["typesafe"]).toEqual({ daily: null, weekly: null, monthly: null });
+  });
+
+  it("新增平台的配额可以编辑并保存", async () => {
+    const wrapper = mountView();
+    await flushPromises();
+    await openUsersTab(wrapper);
+
+    const row = wrapper.findAll("tr").find((row) => row.findAll("td")[0]?.text().trim() === "cline");
+    expect(row).toBeDefined();
+    await row!.find('input[type="number"]').setValue("42.5");
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+
+    const payload = updateSettings.mock.calls.at(-1)![0] as Record<string, unknown>;
+    expect(payload.default_platform_quotas).toHaveProperty("cline", {
+      daily: 42.5, weekly: null, monthly: null,
+    });
   });
 
   it("空输入（v-model.number 产出 \"\"）在提交时清洗为 null 而非空字符串", async () => {
