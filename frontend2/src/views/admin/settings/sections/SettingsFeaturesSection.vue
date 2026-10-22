@@ -30,7 +30,7 @@
                   {{ t('admin.settings.features.channelMonitor.enabledHint') }}
                 </p>
               </div>
-              <Toggle v-model="form.channel_monitor_enabled" />
+              <Toggle :aria-label="t('admin.settings.features.channelMonitor.enabled')" v-model="form.channel_monitor_enabled" />
             </div>
 
             <div v-if="form.channel_monitor_enabled" class="space-y-5">
@@ -81,7 +81,7 @@
                   {{ t('admin.settings.features.channelMonitor.defaultInterval') }}
                   <span class="text-red-500">*</span>
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.features.channelMonitor.defaultInterval')"
                   v-model.number="form.channel_monitor_default_interval_seconds"
                   type="number"
                   min="15"
@@ -103,7 +103,7 @@
                       {{ t('admin.settings.features.channelMonitor.hideThroughputHint') }}
                     </p>
                   </div>
-                  <Toggle v-model="form.channel_monitor_hide_throughput" />
+                  <Toggle :aria-label="t('admin.settings.features.channelMonitor.hideThroughput')" v-model="form.channel_monitor_hide_throughput" />
                 </div>
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
@@ -114,7 +114,7 @@
                       {{ t('admin.settings.features.channelMonitor.hideUserRankingHint') }}
                     </p>
                   </div>
-                  <Toggle v-model="form.channel_monitor_hide_user_ranking" />
+                  <Toggle :aria-label="t('admin.settings.features.channelMonitor.hideUserRanking')" v-model="form.channel_monitor_hide_user_ranking" />
                 </div>
               </div>
 
@@ -127,7 +127,7 @@
                     {{ t('admin.settings.features.channelMonitor.showQuotaHint') }}
                   </p>
                 </div>
-                <Toggle v-model="form.channel_monitor_show_quota" />
+                <Toggle :aria-label="t('admin.settings.features.channelMonitor.showQuota')" v-model="form.channel_monitor_show_quota" />
               </div>
             </div>
           </div>
@@ -161,7 +161,7 @@
                   {{ t('admin.settings.features.availableChannels.enabledHint') }}
                 </p>
               </div>
-              <Toggle v-model="form.available_channels_enabled" />
+              <Toggle :aria-label="t('admin.settings.features.availableChannels.enabled')" v-model="form.available_channels_enabled" />
             </div>
           </div>
         </div>
@@ -185,7 +185,7 @@
                   {{ t('admin.settings.features.modelPlaza.enabledHint') }}
                 </p>
               </div>
-              <Toggle v-model="form.model_plaza_enabled" />
+              <Toggle :aria-label="t('admin.settings.features.modelPlaza.enabled')" v-model="form.model_plaza_enabled" />
             </div>
 
             <div v-if="form.model_plaza_enabled" class="flex items-center justify-between">
@@ -197,7 +197,7 @@
                   {{ t('admin.settings.features.modelPlaza.requireAuthHint') }}
                 </p>
               </div>
-              <Toggle v-model="form.model_plaza_require_auth" />
+              <Toggle :aria-label="t('admin.settings.features.modelPlaza.requireAuth')" v-model="form.model_plaza_require_auth" />
             </div>
 
             <div v-if="form.model_plaza_enabled">
@@ -207,7 +207,7 @@
               <p class="mb-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                 {{ t('admin.settings.features.modelPlaza.priceDescriptionHint') }}
               </p>
-              <textarea
+              <textarea :aria-label="t('admin.settings.features.modelPlaza.priceDescription')"
                 v-model="form.model_plaza_description"
                 rows="6"
                 class="input font-mono text-sm"
@@ -265,7 +265,7 @@
                   {{ t('admin.settings.features.pluginManagement.enabledHint') }}
                 </p>
               </div>
-              <Toggle v-model="form.plugin_management_enabled" />
+              <Toggle :aria-label="t('admin.settings.features.pluginManagement.enabled')" v-model="form.plugin_management_enabled" />
             </div>
           </div>
         </div>
@@ -298,7 +298,7 @@
                   {{ t('admin.settings.features.riskControl.enabledHint') }}
                 </p>
               </div>
-              <Toggle v-model="form.risk_control_enabled" />
+              <Toggle :aria-label="t('admin.settings.features.riskControl.enabled')" v-model="form.risk_control_enabled" />
             </div>
 
             <div>
@@ -322,7 +322,7 @@
                   {{ t('admin.settings.features.riskControl.cyberSessionBlockHint') }}
                 </p>
               </div>
-              <Toggle v-model="form.cyber_session_block_enabled" />
+              <Toggle :aria-label="t('admin.settings.features.riskControl.cyberSessionBlock')" v-model="form.cyber_session_block_enabled" />
             </div>
 
             <div v-if="form.cyber_session_block_enabled">
@@ -330,7 +330,7 @@
                 {{ t('admin.settings.features.riskControl.cyberSessionBlockTTL') }}
                 <span class="text-red-500">*</span>
               </label>
-              <input
+              <input :aria-label="t('admin.settings.features.riskControl.cyberSessionBlockTTL')"
                 v-model.number="form.cyber_session_block_ttl_seconds"
                 type="number"
                 min="1"
@@ -360,7 +360,7 @@
                   {{ t('admin.settings.features.affiliate.enabledHint') }}
                 </p>
               </div>
-              <Toggle v-model="form.affiliate_enabled" />
+              <Toggle :aria-label="t('admin.settings.features.affiliate.enabled')" v-model="form.affiliate_enabled" />
             </div>
 
             <div v-if="form.affiliate_enabled" class="space-y-6">
@@ -373,7 +373,7 @@
                     {{ t('admin.settings.features.affiliate.adminRechargeRebateHint') }}
                   </p>
                 </div>
-                <Toggle v-model="form.affiliate_admin_recharge_enabled" />
+                <Toggle :aria-label="t('admin.settings.features.affiliate.adminRechargeRebate')" v-model="form.affiliate_admin_recharge_enabled" />
               </div>
 
               <div>
@@ -401,7 +401,7 @@
                 <label class="input-label">
                   {{ t('admin.settings.features.affiliate.freezeHours') }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.features.affiliate.freezeHours')"
                   v-model.number="form.affiliate_rebate_freeze_hours"
                   type="number"
                   step="1"
@@ -418,7 +418,7 @@
                 <label class="input-label">
                   {{ t('admin.settings.features.affiliate.durationDays') }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.features.affiliate.durationDays')"
                   v-model.number="form.affiliate_rebate_duration_days"
                   type="number"
                   step="1"
@@ -435,7 +435,7 @@
                 <label class="input-label">
                   {{ t('admin.settings.features.affiliate.perInviteeCap') }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.features.affiliate.perInviteeCap')"
                   v-model.number="form.affiliate_rebate_per_invitee_cap"
                   type="number"
                   step="0.01"
@@ -641,7 +641,7 @@
               </div>
               <div v-else>
                 <label class="input-label">{{ t('admin.settings.features.affiliate.modal.userLabel') }}</label>
-                <input
+                <input :aria-label="t('admin.settings.features.affiliate.modal.userLabel')"
                   type="text"
                   class="input"
                   :value="affiliateModal.editingEntry ? affiliateModal.editingEntry.email : ''"
@@ -651,7 +651,7 @@
 
               <div>
                 <label class="input-label">{{ t('admin.settings.features.affiliate.modal.codeLabel') }}</label>
-                <input
+                <input :aria-label="t('admin.settings.features.affiliate.modal.codeLabel')"
                   v-model="affiliateModal.code"
                   type="text"
                   class="input font-mono"

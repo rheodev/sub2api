@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <AppLayout table-page>
     <TablePageLayout>
       <template #filters>
         <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">

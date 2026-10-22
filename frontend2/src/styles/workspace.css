@@ -46,6 +46,7 @@ html { scroll-padding-top: 88px; }
 .workspace-body { min-width: 0; min-height: 100vh; transition: margin-left 180ms ease; }
 .workspace-main { min-width: 0; padding: 24px 16px 40px; }
 .workspace-main:focus { outline: none; }
+body.navigation-open { overflow: hidden; }
 .workspace-topbar {
   position: sticky; top: 0; z-index: 30;
   background: var(--ws-surface); border-bottom: 1px solid var(--ws-border);
@@ -153,6 +154,7 @@ html { scroll-padding-top: 88px; }
 .settings-tab-active { background: var(--ws-selected); color: var(--ws-action); font-weight: 600; }
 .settings-tab-icon { display: inline-flex; height: 18px; width: 18px; }
 .settings-content { min-width: 0; }
+.settings-save-bar { position: sticky; bottom: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 0; border-top: 1px solid var(--ws-border); background: var(--ws-canvas); }
 .settings-section + div { margin-top: 24px; }
 .settings-section > .space-y-6 { display: contents; }
 .settings-section .card { margin-bottom: 24px; }
@@ -185,45 +187,15 @@ html { scroll-padding-top: 88px; }
 .auth-form-footer { margin-top: 24px; text-align: center; font-size: 13px; color: var(--ws-muted); }
 .auth-copyright { margin-top: 40px; padding-top: 24px; color: var(--ws-muted); font-size: 12px; text-align: center; overflow-wrap: anywhere; }
 
-.landing { min-height: 100vh; display: flex; flex-direction: column; background: var(--ws-surface); color: var(--ws-text); }
-.landing-nav { width: min(1200px, 100%); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px; }
-.landing-brand { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 18px; font-weight: 650; }
-.landing-brand img { width: 32px; height: 32px; object-fit: contain; }
-.landing-brand span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.landing-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
-.landing-hero { width: min(1200px, 100%); margin: 0 auto; display: grid; gap: 40px; align-items: center; padding: 72px 24px 88px; }
-.landing-hero h1 { max-width: 16ch; font-size: clamp(36px, 5vw, 64px); line-height: 1.1; font-weight: 650; letter-spacing: -0.035em; overflow-wrap: anywhere; }
-.landing-hero p { margin: 24px 0 32px; max-width: 48ch; font-size: 18px; line-height: 1.8; color: var(--ws-muted); white-space: pre-wrap; overflow-wrap: anywhere; }
-.landing-hero-links { display: flex; flex-wrap: wrap; gap: 12px; }
-.landing-protocol { border: 1px solid var(--ws-border); border-radius: 10px; overflow: hidden; background: var(--ws-canvas); }
-.landing-protocol-heading { padding: 16px 20px; border-bottom: 1px solid var(--ws-border); display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12px; color: var(--ws-muted); }
-.landing-protocol pre { overflow-x: auto; padding: 24px; font-family: ui-monospace, monospace; font-size: 12px; line-height: 2; color: var(--ws-text); }
-.landing-protocol-label { padding: 12px 20px; border-top: 1px solid var(--ws-border); font-size: 11px; color: var(--ws-muted); }
-.landing-details { border-top: 1px solid var(--ws-border); border-bottom: 1px solid var(--ws-border); background: var(--ws-canvas); }
-.landing-detail-list { width: min(1200px, 100%); margin: 0 auto; display: grid; }
-.landing-detail { padding: 32px 24px; }
-.landing-detail h2 { font-size: 16px; font-weight: 600; }
-.landing-detail p { margin-top: 12px; font-size: 14px; line-height: 1.8; color: var(--ws-muted); }
-.landing-providers { padding: 48px 24px; width: min(1200px, 100%); margin: 0 auto; }
-.landing-providers h2 { font-size: 18px; font-weight: 600; }
-.landing-providers > p { margin-top: 8px; color: var(--ws-muted); }
-.landing-provider-list { display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: center; margin-top: 28px; }
-.landing-provider { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 550; }
-.landing-provider small { font-size: 10px; font-weight: 400; color: var(--ws-muted); }
-.landing-footer { margin-top: auto; border-top: 1px solid var(--ws-border); }
-.landing-footer > div { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; width: min(1200px, 100%); margin: 0 auto; padding: 24px; color: var(--ws-muted); font-size: 12px; }
-.landing-footer nav { display: flex; gap: 24px; }
-.landing.is-compact .landing-hero { display: block; text-align: center; max-width: 800px; padding-top: 112px; padding-bottom: 112px; }
-.landing.is-compact .landing-hero h1, .landing.is-compact .landing-hero p { margin-left: auto; margin-right: auto; }
-.landing.is-compact .landing-hero-links { justify-content: center; }
-.landing.is-compact .landing-protocol { display: none; }
 
 @media (min-width: 768px) {
   .workspace-main { padding: 28px 24px 48px; }
-  .landing-detail-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .landing-detail + .landing-detail { border-left: 1px solid var(--ws-border); }
 }
 @media (min-width: 1024px) {
+  .workspace-body-table { display: flex; flex-direction: column; height: 100dvh; min-height: 0; }
+  .workspace-body-table .workspace-topbar { flex-shrink: 0; }
+  .workspace-body-table .workspace-main { display: flex; flex: 1; min-height: 0; flex-direction: column; padding-bottom: 24px; }
+  .workspace-body-table .workspace-heading { flex-shrink: 0; }
   .workspace-body { margin-left: var(--ws-sidebar); }
   .workspace-body-collapsed { margin-left: 72px; }
   .workspace-main { padding-left: 32px; padding-right: 32px; }
@@ -231,10 +203,9 @@ html { scroll-padding-top: 88px; }
   .auth-story { display: flex; flex-direction: column; }
   .auth-main { padding: 32px 56px; }
   .auth-mobile-brand { display: none; }
-  .landing-hero { grid-template-columns: 1fr 1fr; gap: 64px; }
 }
 @media (max-width: 1023px) {
-  .workspace-sidebar:not(.is-mobile-open) { transform: translateX(-100%); }
+  .workspace-sidebar:not(.is-mobile-open) { transform: translateX(-100%); visibility: hidden; }
   .workspace-sidebar.is-mobile-open { width: var(--ws-sidebar); }
   .workspace-sidebar.is-mobile-open .workspace-sidebar-name,
   .workspace-sidebar.is-mobile-open .workspace-nav-label,
@@ -248,12 +219,6 @@ html { scroll-padding-top: 88px; }
   input:not([type='checkbox']):not([type='radio']), select, textarea { font-size: 16px; }
   .workspace-heading h1 { font-size: 22px; }
   .workspace-density > span { display: none; }
-  .landing-nav { align-items: flex-start; padding: 20px; }
-  .landing-brand { max-width: 40%; }
-  .landing-actions { gap: 4px; }
-  .landing-actions .btn { min-height: 34px; padding: 6px 10px; font-size: 12px; }
-  .landing-hero { padding: 48px 20px; }
-  .landing-protocol pre { padding: 16px; font-size: 11px; }
   .auth-main { padding: 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -276,4 +241,27 @@ html { scroll-padding-top: 88px; }
   .dashboard-metric:nth-child(odd) { border-left: 0; }
   .dashboard-metric:nth-child(n+3) { border-top: 1px solid var(--ws-border); }
   .dashboard-metric-value { font-size: 24px; }
+}
+
+/* Keep operational metrics together so labels, values and totals are easy to scan. */
+.admin-metrics-panel {
+  overflow: hidden;
+  border: 1px solid var(--ws-border);
+  border-radius: 12px;
+  background: var(--ws-surface);
+}
+.admin-metrics-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.admin-metrics-grid + .admin-metrics-grid { border-top: 1px solid var(--ws-border); }
+.admin-metric { min-width: 0; padding: 22px 24px; }
+.admin-metric + .admin-metric { border-left: 1px solid var(--ws-border); }
+.admin-metric .text-xl { margin: 8px 0 6px; font-size: 28px; font-weight: 600; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
+@media (max-width: 1279px) {
+  .admin-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-metric { padding: 18px; }
+  .admin-metric:nth-child(3) { border-left: 0; }
+  .admin-metric:nth-child(n + 3) { border-top: 1px solid var(--ws-border); }
+}
+@media (max-width: 479px) {
+  .admin-metric { padding: 14px 12px; }
+  .admin-metric .text-xl { font-size: 23px; }
 }

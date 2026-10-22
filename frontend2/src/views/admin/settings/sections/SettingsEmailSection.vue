@@ -76,7 +76,7 @@
                   >
                     {{ t("admin.settings.smtp.host") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.smtp.host')"
                     v-model="form.smtp_host"
                     type="text"
                     class="input"
@@ -89,7 +89,7 @@
                   >
                     {{ t("admin.settings.smtp.port") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.smtp.port')"
                     v-model.number="form.smtp_port"
                     type="number"
                     min="1"
@@ -104,7 +104,7 @@
                   >
                     {{ t("admin.settings.smtp.username") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.smtp.username')"
                     v-model="form.smtp_username"
                     type="text"
                     class="input"
@@ -117,7 +117,7 @@
                   >
                     {{ t("admin.settings.smtp.password") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.smtp.password')"
                     v-model="form.smtp_password"
                     type="password"
                     class="input"
@@ -146,7 +146,7 @@
                   >
                     {{ t("admin.settings.smtp.fromEmail") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.smtp.fromEmail')"
                     v-model="form.smtp_from_email"
                     type="email"
                     class="input"
@@ -159,7 +159,7 @@
                   >
                     {{ t("admin.settings.smtp.fromName") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.smtp.fromName')"
                     v-model="form.smtp_from_name"
                     type="text"
                     class="input"
@@ -180,7 +180,7 @@
                     {{ t("admin.settings.smtp.useTlsHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.smtp_use_tls" />
+                <Toggle :aria-label="t('admin.settings.smtp.useTls')" v-model="form.smtp_use_tls" />
               </div>
             </div>
           </div>
@@ -205,7 +205,7 @@
                   >
                     {{ t("admin.settings.testEmail.recipientEmail") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.testEmail.recipientEmail')"
                     v-model="testEmailAddress"
                     type="email"
                     class="input"
@@ -276,7 +276,7 @@
                     {{ t("admin.settings.subscriptionExpiryNotify.enabledHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.subscription_expiry_notify_enabled" />
+                <Toggle :aria-label="t('admin.settings.subscriptionExpiryNotify.enabled')" v-model="form.subscription_expiry_notify_enabled" />
               </div>
             </div>
           </div>
@@ -301,7 +301,7 @@
                   class="mb-0 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >{{ t("admin.settings.balanceNotify.enabled") }}</label
                 >
-                <Toggle v-model="form.balance_low_notify_enabled" />
+                <Toggle :aria-label="t('admin.settings.balanceNotify.enabled')" v-model="form.balance_low_notify_enabled" />
               </div>
               <div v-if="form.balance_low_notify_enabled">
                 <label
@@ -330,7 +330,7 @@
                   class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >{{ t("admin.settings.balanceNotify.rechargeUrl") }}</label
                 >
-                <input
+                <input :aria-label="t('admin.settings.balanceNotify.rechargeUrl')"
                   v-model="form.balance_low_notify_recharge_url"
                   type="url"
                   class="input"
@@ -361,7 +361,7 @@
                   class="mb-0 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >{{ t("admin.settings.quotaNotify.enabled") }}</label
                 >
-                <Toggle v-model="form.account_quota_notify_enabled" />
+                <Toggle :aria-label="t('admin.settings.quotaNotify.enabled')" v-model="form.account_quota_notify_enabled" />
               </div>
               <div v-if="form.account_quota_notify_enabled">
                 <label

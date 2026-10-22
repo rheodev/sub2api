@@ -68,6 +68,9 @@ export function resolveRouteDocumentTitle(
   customMenuItems: CustomMenuItem[] = [],
   options: RouteTitleOptions = {},
 ): string {
+  if (route.name === 'Home' && (!siteName?.trim() || /^sub2api$/i.test(siteName.trim()))) {
+    return i18n.global.t('portal.defaultName')
+  }
   const id = typeof route.params.id === 'string' ? route.params.id : ''
   const menuItem = route.name === 'CustomPage' && id
     ? customMenuItems.find((item) => item.id === id)

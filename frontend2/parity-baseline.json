@@ -676,7 +676,7 @@
     "src/features/prompt-audit/types.ts": "64008fa5283b8de4a4872a1f7188553114bf46df6a3fa68d094a9892dbf4c988",
     "src/features/prompt-audit/viewModel.ts": "f05716427890eed53d464efcae8a2d908b039d924c477e62233a4ca8504082c4",
     "src/router/index.ts": "7e4c1e51ed5346622ee1302098e96fb90792a9980d4490fac7fd7476d6f1be29",
-    "src/router/title.ts": "7635c337b237047c6f416789c073476b671158b379e2ff8b91bd82b356cffb67",
+    "src/router/title.ts": "d4a2347341709453121e8adf0accbf4b855167f0058e12ad3682923e5171a679",
     "src/types/global.d.ts": "e3038a5590279d22dcf37e9e31656e7c49e472b60afecbd9d367fff4cf66005c",
     "src/types/index.ts": "0bfb907a99d6cb83166f6f9521e7d943c4611349174cc8954b36f606c3c76494",
     "src/types/openaiReferrals.ts": "acec0bd873a78a5c649979816a8f05d16439cf66cd789f9f94966a09240f5080",

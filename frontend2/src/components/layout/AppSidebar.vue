@@ -1,5 +1,5 @@
 <template>
-  <aside class="workspace-sidebar" :class="{ 'is-collapsed': sidebarCollapsed, 'is-mobile-open': mobileOpen }">
+  <aside id="workspace-navigation" ref="sidebarRef" class="workspace-sidebar" :class="{ 'is-collapsed': sidebarCollapsed, 'is-mobile-open': mobileOpen }" :inert="isNarrow && !mobileOpen" :role="isNarrow && mobileOpen ? 'dialog' : undefined" :aria-modal="isNarrow && mobileOpen ? true : undefined" :aria-label="t('workspace.navigation')" tabindex="-1">
     <div class="workspace-sidebar-brand">
       <router-link :to="homePath" :aria-label="siteName" @click="handleMenuItemClick(homePath)">
         <img v-if="settingsLoaded" :src="siteLogo || '/logo.svg'" alt="" />
@@ -141,6 +141,9 @@ const { canUseBatchImage, refreshBatchImageAccess } = useBatchImageAccess()
 const sidebarCollapsed = computed(() => appStore.sidebarCollapsed && !appStore.mobileOpen)
 const mobileOpen = computed(() => appStore.mobileOpen)
 const isAdmin = computed(() => authStore.isAdmin)
+const sidebarRef = ref<HTMLElement | null>(null)
+const isNarrow = ref(window.innerWidth < 1024)
+let returnFocus: HTMLElement | null = null
 const sidebarNavRef = ref<HTMLElement | null>(null)
 const navigationSearch = ref('')
 function filterNavigation(items: NavItem[]): NavItem[] {
@@ -157,8 +160,50 @@ const visibleUserNav = computed(() => filterNavigation(userNavItems.value))
 const visiblePersonalNav = computed(() => filterNavigation(personalNavItems.value))
 watch(() => route.path, () => { navigationSearch.value = '' })
 function onSidebarKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape' && mobileOpen.value) closeMobile()
+  if (!isNarrow.value || !mobileOpen.value) return
+  // A nested dialog manages its own focus until it is dismissed.
+  if (document.body.classList.contains('modal-open')) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    closeMobile()
+  }
+  if (event.key !== 'Tab') return
+  const items = sidebarFocusable()
+  const first = items[0]
+  const last = items[items.length - 1]
+  const active = document.activeElement
+  if (!first) {
+    event.preventDefault()
+    sidebarRef.value?.focus()
+  } else if (!sidebarRef.value?.contains(active) || (event.shiftKey ? active === first : active === last)) {
+    event.preventDefault()
+    ;(event.shiftKey ? last : first)?.focus()
+  }
 }
+
+function sidebarFocusable() {
+  return Array.from(sidebarRef.value?.querySelectorAll<HTMLElement>('a[href], button, input, [tabindex="0"]') ?? [])
+    .filter(element => !element.matches(':disabled') && element.getClientRects().length > 0)
+}
+
+function updateViewport() {
+  isNarrow.value = window.innerWidth < 1024
+  if (!isNarrow.value && mobileOpen.value) closeMobile()
+}
+
+watch(mobileOpen, async open => {
+  if (open) {
+    returnFocus = document.activeElement as HTMLElement | null
+    document.body.classList.add('navigation-open')
+    await nextTick()
+    if (mobileOpen.value) (sidebarFocusable()[0] ?? sidebarRef.value)?.focus()
+  } else {
+    document.body.classList.remove('navigation-open')
+    await nextTick()
+    if (returnFocus?.isConnected && !document.body.classList.contains('modal-open')) returnFocus.focus()
+    returnFocus = null
+  }
+})
 
 const isDark = ref(document.documentElement.classList.contains('dark'))
 
@@ -869,6 +914,7 @@ watch(
 
 onMounted(() => {
   document.addEventListener('keydown', onSidebarKeydown)
+  window.addEventListener('resize', updateViewport)
   void refreshBatchImageAccess()
   if (isAdmin.value) {
     adminSettingsStore.fetch()
@@ -885,6 +931,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onSidebarKeydown)
+  window.removeEventListener('resize', updateViewport)
+  document.body.classList.remove('navigation-open')
+  appStore.setMobileOpen(false)
   if (sidebarNavRef.value) {
     appStore.sidebarScrollTop = sidebarNavRef.value.scrollTop
   }

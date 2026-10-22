@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mount, RouterLinkStub } from '@vue/test-utils'
+import { mount, flushPromises, RouterLinkStub } from '@vue/test-utils'
 
 import HomeView from '../HomeView.vue'
 
-const { appStore, authStore } = vi.hoisted(() => ({
+const { getModelPlaza, appStore, authStore } = vi.hoisted(() => ({
+  getModelPlaza: vi.fn().mockResolvedValue({ groups: [] }),
   appStore: {
     cachedPublicSettings: {} as Record<string, unknown>,
     siteName: 'Fallback site',
@@ -19,6 +20,8 @@ const { appStore, authStore } = vi.hoisted(() => ({
     checkAuth: vi.fn(),
   },
 }))
+
+vi.mock('@/api/modelPlaza', () => ({ getModelPlaza }))
 
 vi.mock('@/stores', () => ({
   useAppStore: () => appStore,
@@ -108,7 +111,7 @@ describe('HomeView compact mode', () => {
     const wrapper = mountHome(settings)
 
     expect(wrapper.find('[data-testid="compact-home"]').exists()).toBe(false)
-    expect(wrapper.find('.landing-protocol').exists()).toBe(true)
+    expect(wrapper.find('.welcome-studio').exists()).toBe(true)
   })
 
   it('links unauthenticated visitors to login', () => {
@@ -180,5 +183,66 @@ describe('HomeView compact mode', () => {
     })
 
     expect(modelPlazaDestination(wrapper)).toBeUndefined()
+  })
+})
+
+describe('HomeView user experience', () => {
+  beforeEach(() => {
+    authStore.isAuthenticated = false
+    getModelPlaza.mockReset().mockResolvedValue({ groups: [] })
+  })
+
+  it('replaces factory branding and technical copy while preserving custom branding', () => {
+    const wrapper = mountHome({ site_name: 'Sub2API', site_subtitle: 'Subscription to API Conversion Platform' })
+    expect(wrapper.text()).toContain('portal.defaultName')
+    expect(wrapper.text()).not.toContain('Subscription to API')
+    expect(wrapper.find('pre').exists()).toBe(false)
+    expect(wrapper.find('a[href*="github.com"]').exists()).toBe(false)
+    wrapper.unmount()
+    const custom = mountHome({ site_name: 'My AI', site_subtitle: 'My introduction' })
+    expect(custom.text()).toContain('My AI')
+    expect(custom.text()).toContain('My introduction')
+    custom.unmount()
+  })
+
+  it('supports keyboard selection of user scenarios', async () => {
+    const wrapper = mountHome()
+    await wrapper.get('#scenario-tab-writing').trigger('keydown', { key: 'End' })
+    expect(wrapper.get('#scenario-tab-learning').attributes('aria-selected')).toBe('true')
+    await wrapper.get('#scenario-tab-learning').trigger('keydown', { key: 'ArrowRight' })
+    expect(wrapper.get('#scenario-tab-writing').attributes('aria-selected')).toBe('true')
+    expect(wrapper.findAll('[role="tab"][tabindex="0"]')).toHaveLength(1)
+    wrapper.unmount()
+  })
+
+  it('loads only enabled, permitted model previews and deduplicates model names', async () => {
+    const hidden = mountHome({ model_plaza_enabled: true, model_plaza_require_auth: true })
+    await flushPromises()
+    expect(getModelPlaza).not.toHaveBeenCalled()
+    hidden.unmount()
+    getModelPlaza.mockResolvedValue({ groups: [{ models: [{ name: 'Model A' }, { name: 'Model A' }, { name: 'Model B' }] }] })
+    const wrapper = mountHome({ model_plaza_enabled: true })
+    await flushPromises()
+    expect(wrapper.findAll('.welcome-model-row')).toHaveLength(2)
+    wrapper.unmount()
+  })
+
+  it('offers a retry after a model preview failure and keeps other content usable', async () => {
+    getModelPlaza.mockRejectedValueOnce(new Error('unavailable'))
+    const wrapper = mountHome({ model_plaza_enabled: true })
+    await flushPromises()
+    expect(wrapper.text()).toContain('portal.modelsFailed')
+    getModelPlaza.mockResolvedValue({ groups: [] })
+    await wrapper.get('.welcome-model-status button').trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('portal.modelsEmpty')
+    wrapper.unmount()
+  })
+
+  it('hides subscriptions when disabled and sends anonymous service entries to login', () => {
+    const wrapper = mountHome({ subscription_enabled: false })
+    expect(wrapper.text()).not.toContain('portal.subscriptionTitle')
+    for (const link of wrapper.get('.welcome-service-grid').findAllComponents(RouterLinkStub)) expect(link.props('to')).toBe('/login')
+    wrapper.unmount()
   })
 })

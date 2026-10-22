@@ -34,7 +34,7 @@
                       {{ t("admin.settings.overloadCooldown.enabledHint") }}
                     </p>
                   </div>
-                  <Toggle v-model="overloadCooldownForm.enabled" />
+                  <Toggle :aria-label="t('admin.settings.overloadCooldown.enabled')" v-model="overloadCooldownForm.enabled" />
                 </div>
 
                 <div
@@ -47,7 +47,7 @@
                     >
                       {{ t("admin.settings.overloadCooldown.cooldownMinutes") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.overloadCooldown.cooldownMinutes')"
                       v-model.number="overloadCooldownForm.cooldown_minutes"
                       type="number"
                       min="1"
@@ -135,7 +135,7 @@
                       {{ t("admin.settings.rateLimit429Cooldown.enabledHint") }}
                     </p>
                   </div>
-                  <Toggle v-model="rateLimit429CooldownForm.enabled" />
+                  <Toggle :aria-label="t('admin.settings.rateLimit429Cooldown.enabled')" v-model="rateLimit429CooldownForm.enabled" />
                 </div>
 
                 <div
@@ -152,7 +152,7 @@
                         )
                       }}
                     </label>
-                    <input
+                    <input :aria-label="t( 'admin.settings.rateLimit429Cooldown.cooldownSeconds', )"
                       v-model.number="rateLimit429CooldownForm.cooldown_seconds"
                       type="number"
                       min="1"
@@ -244,7 +244,7 @@
                       {{ t("admin.settings.streamTimeout.enabledHint") }}
                     </p>
                   </div>
-                  <Toggle v-model="streamTimeoutForm.enabled" />
+                  <Toggle :aria-label="t('admin.settings.streamTimeout.enabled')" v-model="streamTimeoutForm.enabled" />
                 </div>
 
                 <!-- Settings - Only show when enabled -->
@@ -287,7 +287,7 @@
                     >
                       {{ t("admin.settings.streamTimeout.tempUnschedMinutes") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.streamTimeout.tempUnschedMinutes')"
                       v-model.number="streamTimeoutForm.temp_unsched_minutes"
                       type="number"
                       min="1"
@@ -308,7 +308,7 @@
                     >
                       {{ t("admin.settings.streamTimeout.thresholdCount") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.streamTimeout.thresholdCount')"
                       v-model.number="streamTimeoutForm.threshold_count"
                       type="number"
                       min="1"
@@ -329,7 +329,7 @@
                         t("admin.settings.streamTimeout.thresholdWindowMinutes")
                       }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.streamTimeout.thresholdWindowMinutes')"
                       v-model.number="
                         streamTimeoutForm.threshold_window_minutes
                       "
@@ -424,7 +424,7 @@
                       {{ t("admin.settings.rectifier.enabledHint") }}
                     </p>
                   </div>
-                  <Toggle v-model="rectifierForm.enabled" />
+                  <Toggle :aria-label="t('admin.settings.rectifier.enabled')" v-model="rectifierForm.enabled" />
                 </div>
 
                 <!-- Sub-toggles (only show when master is enabled) -->
@@ -447,7 +447,7 @@
                         }}
                       </p>
                     </div>
-                    <Toggle
+                    <Toggle :aria-label="t('admin.settings.rectifier.thinkingSignature')"
                       v-model="rectifierForm.thinking_signature_enabled"
                     />
                   </div>
@@ -465,7 +465,7 @@
                         {{ t("admin.settings.rectifier.thinkingBudgetHint") }}
                       </p>
                     </div>
-                    <Toggle v-model="rectifierForm.thinking_budget_enabled" />
+                    <Toggle :aria-label="t('admin.settings.rectifier.thinkingBudget')" v-model="rectifierForm.thinking_budget_enabled" />
                   </div>
 
                   <!-- API Key Signature Rectifier -->
@@ -481,7 +481,7 @@
                         {{ t("admin.settings.rectifier.apikeySignatureHint") }}
                       </p>
                     </div>
-                    <Toggle v-model="rectifierForm.apikey_signature_enabled" />
+                    <Toggle :aria-label="t('admin.settings.rectifier.apikeySignature')" v-model="rectifierForm.apikey_signature_enabled" />
                   </div>
 
                   <!-- Custom Patterns (only when apikey_signature_enabled) -->
@@ -640,7 +640,7 @@
                       >
                         {{ t("admin.settings.betaPolicy.action") }}
                       </label>
-                      <Select
+                      <Select :aria-label="t('admin.settings.betaPolicy.action')"
                         :modelValue="rule.action"
                         @update:modelValue="rule.action = $event as any"
                         :options="betaPolicyActionOptions"
@@ -654,7 +654,7 @@
                       >
                         {{ t("admin.settings.betaPolicy.scope") }}
                       </label>
-                      <Select
+                      <Select :aria-label="t('admin.settings.betaPolicy.scope')"
                         :modelValue="rule.scope"
                         @update:modelValue="rule.scope = $event as any"
                         :options="betaPolicyScopeOptions"
@@ -669,7 +669,7 @@
                     >
                       {{ t("admin.settings.betaPolicy.errorMessage") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.betaPolicy.errorMessage')"
                       v-model="rule.error_message"
                       type="text"
                       class="input"
@@ -802,7 +802,7 @@
                     >
                       {{ t("admin.settings.betaPolicy.fallbackAction") }}
                     </label>
-                    <Select
+                    <Select :aria-label="t('admin.settings.betaPolicy.fallbackAction')"
                       :modelValue="rule.fallback_action || 'pass'"
                       @update:modelValue="rule.fallback_action = $event as any"
                       :options="betaPolicyActionOptions"
@@ -975,7 +975,7 @@
                     >
                       {{ t("admin.settings.openaiFastPolicy.serviceTier") }}
                     </label>
-                    <Select
+                    <Select :aria-label="t('admin.settings.openaiFastPolicy.serviceTier')"
                       :modelValue="rule.service_tier"
                       @update:modelValue="
                         rule.service_tier = $event as
@@ -995,7 +995,7 @@
                     >
                       {{ t("admin.settings.openaiFastPolicy.action") }}
                     </label>
-                    <Select
+                    <Select :aria-label="t('admin.settings.openaiFastPolicy.action')"
                       :modelValue="rule.action"
                       @update:modelValue="
                         rule.action = $event as
@@ -1015,7 +1015,7 @@
                     >
                       {{ t("admin.settings.openaiFastPolicy.scope") }}
                     </label>
-                    <Select
+                    <Select :aria-label="t('admin.settings.openaiFastPolicy.scope')"
                       :modelValue="rule.scope"
                       @update:modelValue="
                         rule.scope = $event as
@@ -1052,7 +1052,7 @@
                   >
                     {{ t("admin.settings.openaiFastPolicy.errorMessage") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.openaiFastPolicy.errorMessage')"
                     v-model="rule.error_message"
                     type="text"
                     class="input"
@@ -1157,7 +1157,7 @@
                   >
                     {{ t("admin.settings.openaiFastPolicy.fallbackAction") }}
                   </label>
-                  <Select
+                  <Select :aria-label="t('admin.settings.openaiFastPolicy.fallbackAction')"
                     :modelValue="rule.fallback_action || 'pass'"
                     @update:modelValue="
                       rule.fallback_action = $event as
@@ -1237,7 +1237,7 @@
                 >
                   {{ t("admin.settings.claudeCode.minVersion") }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.claudeCode.minVersion')"
                   v-model="form.min_claude_code_version"
                   type="text"
                   class="input max-w-xs font-mono text-sm"
@@ -1255,7 +1255,7 @@
                 >
                   {{ t("admin.settings.claudeCode.maxVersion") }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.claudeCode.maxVersion')"
                   v-model="form.max_claude_code_version"
                   type="text"
                   class="input max-w-xs font-mono text-sm"
@@ -1295,7 +1295,7 @@
                     >
                       {{ t("admin.settings.gatewayForwarding.minCodexVersion") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.gatewayForwarding.minCodexVersion')"
                       v-model="form.min_codex_version"
                       type="text"
                       class="input w-full font-mono text-sm"
@@ -1312,7 +1312,7 @@
                     >
                       {{ t("admin.settings.gatewayForwarding.maxCodexVersion") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.gatewayForwarding.maxCodexVersion')"
                       v-model="form.max_codex_version"
                       type="text"
                       class="input w-full font-mono text-sm"
@@ -1391,7 +1391,7 @@
                       }}
                     </p>
                   </div>
-                  <Toggle
+                  <Toggle :aria-label="t('admin.settings.gatewayForwarding.codexAllowAppServer')"
                     v-model="form.codex_cli_only_allow_app_server_clients"
                   />
                 </div>
@@ -1796,7 +1796,7 @@
                     {{ t("admin.settings.scheduling.allowUngroupedKeyHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.allow_ungrouped_key_scheduling" />
+                <Toggle :aria-label="t('admin.settings.scheduling.allowUngroupedKey')" v-model="form.allow_ungrouped_key_scheduling" />
               </div>
 
               <div class="border-t border-gray-100 pt-4 dark:border-dark-700">
@@ -1887,7 +1887,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t('admin.settings.openaiExperimentalScheduler.lowRatePriorityTitle')"
                   v-model="form.openai_low_upstream_rate_priority_enabled"
                   data-testid="openai-low-rate-priority-toggle"
                 />
@@ -1937,7 +1937,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t('admin.settings.openaiExperimentalScheduler.title')"
                   v-model="form.openai_advanced_scheduler_enabled"
                   data-testid="openai-advanced-scheduler-toggle"
                 />
@@ -1959,7 +1959,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle v-model="form.openai_advanced_scheduler_sticky_weighted_enabled" />
+                <Toggle :aria-label="t('admin.settings.openaiExperimentalScheduler.stickyWeightedTitle')" v-model="form.openai_advanced_scheduler_sticky_weighted_enabled" />
               </div>
 
               <div
@@ -1978,7 +1978,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle v-model="form.openai_advanced_scheduler_subscription_priority_enabled" />
+                <Toggle :aria-label="t('admin.settings.openaiExperimentalScheduler.subscriptionPriorityTitle')" v-model="form.openai_advanced_scheduler_subscription_priority_enabled" />
               </div>
 
               <div
@@ -2099,7 +2099,7 @@
                       {{ t("admin.settings.gatewayForwarding.grokCrossClientMapHint") }}
                     </p>
                   </div>
-                  <Toggle
+                  <Toggle :aria-label="t('admin.settings.gatewayForwarding.grokCrossClientMap')"
                     v-model="form.grok_cross_client_model_map_enabled"
                     data-testid="grok-cross-client-model-map-toggle"
                   />
@@ -2175,7 +2175,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle v-model="form.enable_fingerprint_unification" />
+                <Toggle :aria-label="t( 'admin.settings.gatewayForwarding.fingerprintUnification', )" v-model="form.enable_fingerprint_unification" />
               </div>
 
               <!-- Metadata Passthrough -->
@@ -2196,7 +2196,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle v-model="form.enable_metadata_passthrough" />
+                <Toggle :aria-label="t('admin.settings.gatewayForwarding.metadataPassthrough')" v-model="form.enable_metadata_passthrough" />
               </div>
 
               <!-- CCH Signing -->
@@ -2211,7 +2211,7 @@
                     {{ t("admin.settings.gatewayForwarding.cchSigningHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.enable_cch_signing" />
+                <Toggle :aria-label="t('admin.settings.gatewayForwarding.cchSigning')" v-model="form.enable_cch_signing" />
               </div>
 
               <!-- Claude OAuth System Prompt Injection -->
@@ -2234,7 +2234,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t( 'admin.settings.gatewayForwarding.claudeOAuthSystemPromptInjection', )"
                   v-model="form.enable_claude_oauth_system_prompt_injection"
                 />
               </div>
@@ -2325,7 +2325,7 @@
                         >
                           <Icon name="arrowDown" size="xs" />
                         </button>
-                        <Toggle v-model="block.enabled" />
+                        <Toggle :aria-label="t('admin.settings.gatewayForwarding.claudeOAuthSystemPromptBlocks') + ' ' + (index + 1)" v-model="block.enabled" />
                         <button
                           type="button"
                           class="btn btn-secondary btn-sm px-2 text-red-600 hover:text-red-700 dark:text-red-400"
@@ -2348,7 +2348,7 @@
                               )
                             }}
                           </label>
-                          <Select
+                          <Select :aria-label="t( 'admin.settings.gatewayForwarding.systemBlockPreset', )"
                             v-model="block.preset"
                             :options="claudeOAuthSystemPromptPresetOptions"
                             @change="
@@ -2367,7 +2367,7 @@
                               )
                             }}
                           </label>
-                          <Select
+                          <Select :aria-label="t( 'admin.settings.gatewayForwarding.systemBlockType', )"
                             v-model="block.type"
                             :options="claudeOAuthSystemPromptBlockTypeOptions"
                           />
@@ -2380,7 +2380,7 @@
                         >
                           {{ t("admin.settings.gatewayForwarding.systemBlockText") }}
                         </label>
-                        <textarea
+                        <textarea :aria-label="t('admin.settings.gatewayForwarding.systemBlockText')"
                           v-model="block.text"
                           rows="6"
                           class="input w-full resize-y font-mono text-xs leading-5"
@@ -2403,7 +2403,7 @@
                               }}
                             </label>
                           </div>
-                          <Toggle v-model="block.cacheControlEnabled" />
+                          <Toggle :aria-label="t( 'admin.settings.gatewayForwarding.systemBlockCacheControl', )" v-model="block.cacheControlEnabled" />
                         </div>
                         <div v-if="block.cacheControlEnabled">
                           <Select
@@ -2465,7 +2465,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t( 'admin.settings.gatewayForwarding.anthropicCacheTTL1hInjection', )"
                   v-model="form.enable_anthropic_cache_ttl_1h_injection"
                 />
               </div>
@@ -2490,7 +2490,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle v-model="form.rewrite_message_cache_control" />
+                <Toggle :aria-label="t( 'admin.settings.gatewayForwarding.rewriteMessageCacheControl', )" v-model="form.rewrite_message_cache_control" />
               </div>
 
               <!-- 客户端 dateline 归一化（仅 Anthropic OAuth/SetupToken） -->
@@ -2513,7 +2513,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t( 'admin.settings.gatewayForwarding.clientDatelineNormalization', )"
                   v-model="form.enable_client_dateline_normalization"
                 />
               </div>
@@ -2529,7 +2529,7 @@
                     )
                   }}
                 </label>
-                <input
+                <input :aria-label="t( 'admin.settings.gatewayForwarding.antigravityUserAgentVersion', )"
                   v-model="form.antigravity_user_agent_version"
                   type="text"
                   class="input max-w-xs font-mono text-sm"
@@ -2559,7 +2559,7 @@
                     )
                   }}
                 </label>
-                <input
+                <input :aria-label="t( 'admin.settings.gatewayForwarding.openaiCodexUserAgent', )"
                   v-model="form.openai_codex_user_agent"
                   type="text"
                   class="input w-full font-mono text-sm"
@@ -2589,7 +2589,7 @@
                     )
                   }}
                 </label>
-                <input
+                <input :aria-label="t( 'admin.settings.gatewayForwarding.openaiCodexClientVersion', )"
                   v-model="form.openai_codex_client_version"
                   type="text"
                   class="input w-full font-mono text-sm"
@@ -2634,7 +2634,7 @@
                     {{ codexSyncedVersionLabel }}
                   </p>
                 </div>
-                <Toggle v-model="form.openai_codex_version_auto_sync_enabled" />
+                <Toggle :aria-label="t( 'admin.settings.gatewayForwarding.openaiCodexVersionAutoSync', )" v-model="form.openai_codex_version_auto_sync_enabled" />
               </div>
 
               <!-- Claude Code 客户端版本号 -->
@@ -2648,7 +2648,7 @@
                     )
                   }}
                 </label>
-                <input
+                <input :aria-label="t( 'admin.settings.gatewayForwarding.claudeCodeClientVersion', )"
                   v-model="form.claude_code_client_version"
                   type="text"
                   class="input w-full font-mono text-sm"
@@ -2689,7 +2689,7 @@
                     {{ claudeSyncedVersionLabel }}
                   </p>
                 </div>
-                <Toggle v-model="form.claude_code_version_auto_sync_enabled" />
+                <Toggle :aria-label="t( 'admin.settings.gatewayForwarding.claudeCodeVersionAutoSync', )" v-model="form.claude_code_version_auto_sync_enabled" />
               </div>
 
             </div>
@@ -2720,7 +2720,7 @@
                     {{ t("admin.settings.webSearchEmulation.enabledHint") }}
                   </p>
                 </div>
-                <Toggle v-model="webSearchConfig.enabled" />
+                <Toggle :aria-label="t('admin.settings.webSearchEmulation.enabled')" v-model="webSearchConfig.enabled" />
               </div>
 
               <!-- Providers -->
@@ -2934,7 +2934,7 @@
                         <label class="text-xs text-gray-500">{{
                           t("admin.settings.webSearchEmulation.quotaLimit")
                         }}</label>
-                        <input
+                        <input :aria-label="t('admin.settings.webSearchEmulation.quotaLimit')"
                           v-model="provider.quota_limit"
                           type="number"
                           min="1"
@@ -2953,7 +2953,7 @@
                         <label class="text-xs text-gray-500">{{
                           t("admin.settings.webSearchEmulation.subscribedAt")
                         }}</label>
-                        <input
+                        <input :aria-label="t('admin.settings.webSearchEmulation.subscribedAt')"
                           :value="formatSubscribedAt(provider.subscribed_at)"
                           type="date"
                           class="input text-sm"

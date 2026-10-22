@@ -26,7 +26,7 @@
                     {{ t("admin.settings.site.backendModeDescription") }}
                   </p>
 	                </div>
-	                <Toggle v-model="form.backend_mode_enabled" />
+	                <Toggle :aria-label="t('admin.settings.site.backendMode')" v-model="form.backend_mode_enabled" />
 	              </div>
 
 	              <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -36,7 +36,7 @@
                   >
                     {{ t("admin.settings.site.siteName") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.site.siteName')"
                     v-model="form.site_name"
                     type="text"
                     class="input"
@@ -52,7 +52,7 @@
                   >
                     {{ t("admin.settings.site.siteSubtitle") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.site.siteSubtitle')"
                     v-model="form.site_subtitle"
                     type="text"
                     class="input"
@@ -73,7 +73,7 @@
                 >
                   {{ t("admin.settings.site.apiBaseUrl") }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.site.apiBaseUrl')"
                   v-model="form.api_base_url"
                   type="text"
                   class="input font-mono text-sm"
@@ -99,7 +99,7 @@
                     >
                       {{ t("admin.settings.site.tableDefaultPageSize") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.site.tableDefaultPageSize')"
                       v-model.number="form.table_default_page_size"
                       type="number"
                       min="5"
@@ -117,7 +117,7 @@
                     >
                       {{ t("admin.settings.site.tablePageSizeOptions") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.site.tablePageSizeOptions')"
                       v-model="tablePageSizeOptionsInput"
                       type="text"
                       class="input font-mono text-sm"
@@ -186,7 +186,7 @@
                         >
                           {{ t("admin.settings.site.customEndpoints.name") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.site.customEndpoints.name')"
                           v-model="ep.name"
                           type="text"
                           class="input text-sm"
@@ -205,7 +205,7 @@
                             t("admin.settings.site.customEndpoints.endpointUrl")
                           }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.site.customEndpoints.endpointUrl')"
                           v-model="ep.endpoint"
                           type="url"
                           class="input font-mono text-sm"
@@ -226,7 +226,7 @@
                             )
                           }}
                         </label>
-                        <input
+                        <input :aria-label="t( 'admin.settings.site.customEndpoints.descriptionLabel', )"
                           v-model="ep.description"
                           type="text"
                           class="input text-sm"
@@ -270,7 +270,7 @@
                 >
                   {{ t("admin.settings.site.contactInfo") }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.site.contactInfo')"
                   v-model="form.contact_info"
                   type="text"
                   class="input"
@@ -288,7 +288,7 @@
                 >
                   {{ t("admin.settings.site.docUrl") }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.site.docUrl')"
                   v-model="form.doc_url"
                   type="url"
                   class="input font-mono text-sm"
@@ -323,7 +323,7 @@
                 >
                   {{ t("admin.settings.site.homeContent") }}
                 </label>
-                <textarea
+                <textarea :aria-label="t('admin.settings.site.homeContent')"
                   v-model="form.home_content"
                   rows="6"
                   class="input font-mono text-sm"
@@ -348,7 +348,7 @@
                     {{ t("admin.settings.site.compactHomeHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.compact_home_enabled" data-testid="compact-home-toggle" />
+                <Toggle :aria-label="t('admin.settings.site.compactHome')" v-model="form.compact_home_enabled" data-testid="compact-home-toggle" />
               </div>
 
               <!-- Hide CCS Import Button -->
@@ -363,7 +363,7 @@
                     {{ t("admin.settings.site.hideCcsImportButtonHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.hide_ccs_import_button" />
+                <Toggle :aria-label="t('admin.settings.site.hideCcsImportButton')" v-model="form.hide_ccs_import_button" />
               </div>
             </div>
           </div>
@@ -472,7 +472,7 @@
                     >
                       {{ t("admin.settings.customMenu.name") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.customMenu.name')"
                       v-model="item.label"
                       type="text"
                       class="input text-sm"
@@ -506,7 +506,7 @@
                     >
                       {{ t("admin.settings.customMenu.url") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.customMenu.url')"
                       v-model="item.url"
                       type="url"
                       class="input font-mono text-sm"

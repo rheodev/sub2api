@@ -68,9 +68,16 @@ config.local.yaml
 logs/
 
 # Temporary files
+.dev/
+.agents/
+.codex/
 tmp/
 temp/
 *.tmp
+backend/bin/
+backend/data/
+backend/internal/web/dist/
+backend/.installed
 
 # Deploy files (not needed in image)
 deploy/install.sh

@@ -2,10 +2,10 @@
   <div class="workspace-shell">
     <a class="skip-link" href="#workspace-main">{{ t('workspace.skipToContent') }}</a>
     <AppSidebar />
-    <div class="workspace-body" :class="{ 'workspace-body-collapsed': sidebarCollapsed }">
+    <div class="workspace-body" :class="{ 'workspace-body-collapsed': sidebarCollapsed, 'workspace-body-table': tablePage }" :inert="appStore.mobileOpen">
       <AppHeader />
       <main id="workspace-main" class="workspace-main" tabindex="-1">
-        <PageHeading><TableDensityControl /></PageHeading>
+        <PageHeading><TableDensityControl v-if="tablePage || tableDensity" /></PageHeading>
         <slot />
       </main>
     </div>
@@ -24,6 +24,8 @@ import { useOnboardingTour } from '@/composables/useOnboardingTour'
 import { useOnboardingStore } from '@/stores/onboarding'
 import AppSidebar from './AppSidebar.vue'
 import AppHeader from './AppHeader.vue'
+
+defineProps<{ tablePage?: boolean; tableDensity?: boolean }>()
 
 const { t } = useI18n()
 const appStore = useAppStore()

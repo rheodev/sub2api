@@ -99,7 +99,7 @@ function mountView(stubActionMenu = true) {
     global: {
       stubs: {
         AppLayout: { template: '<div><slot /></div>' },
-        TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
+        TablePageLayout: { template: '<div><slot name="actions" /><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
         DataTable: DataTableStub,
         AccountTableActions: { template: '<div><slot name="after" /></div>' },
         AccountTableFilters: true,
@@ -290,7 +290,7 @@ describe('admin AccountsView lite account list', () => {
     await flushPromises()
 
     expect(showError).toHaveBeenCalledWith('detail failed')
-    expect(wrapper.get('[data-test="edit-account"]').text()).toBe('')
+    expect(wrapper.find('[data-test="edit-account"]').exists()).toBe(false)
     consoleError.mockRestore()
     wrapper.unmount()
   })

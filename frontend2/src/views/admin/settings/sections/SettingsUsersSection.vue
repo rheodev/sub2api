@@ -21,7 +21,7 @@
                   >
                     {{ t("admin.settings.defaults.defaultBalance") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.defaults.defaultBalance')"
                     v-model.number="form.default_balance"
                     type="number"
                     step="0.01"
@@ -39,7 +39,7 @@
                   >
                     {{ t("admin.settings.defaults.defaultConcurrency") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.defaults.defaultConcurrency')"
                     v-model.number="form.default_concurrency"
                     type="number"
                     min="1"
@@ -56,7 +56,7 @@
                   >
                     {{ t("admin.settings.defaults.defaultUserRpmLimit") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.defaults.defaultUserRpmLimit')"
                     v-model.number="form.default_user_rpm_limit"
                     type="number"
                     min="0"
@@ -111,7 +111,7 @@
                       >
                         {{ t("admin.settings.defaults.subscriptionGroup") }}
                       </label>
-                      <Select
+                      <Select :aria-label="t('admin.settings.defaults.subscriptionGroup')"
                         v-model="item.group_id"
                         class="default-sub-group-select"
                         :options="defaultSubscriptionGroupOptions"
@@ -187,7 +187,7 @@
                           t("admin.settings.defaults.subscriptionValidityDays")
                         }}
                       </label>
-                      <input
+                      <input :aria-label="t('admin.settings.defaults.subscriptionValidityDays')"
                         v-model.number="item.validity_days"
                         type="number"
                         min="1"
@@ -298,7 +298,7 @@
                     {{ t("admin.settings.authSourceDefaults.requireEmailHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.force_email_on_third_party_signup" />
+                <Toggle :aria-label="t('admin.settings.authSourceDefaults.requireEmailLabel')" v-model="form.force_email_on_third_party_signup" />
               </div>
 
               <div class="space-y-4">
@@ -316,7 +316,7 @@
                         {{ authSource.description }}
                       </p>
                     </div>
-                    <Toggle
+                    <Toggle :aria-label="authSource.title"
                       v-model="
                         authSourceDefaults[authSource.source].grant_on_signup
                       "
@@ -340,7 +340,7 @@
                         >
                           {{ t("admin.settings.defaults.defaultBalance") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.defaults.defaultBalance')"
                           v-model.number="
                             authSourceDefaults[authSource.source].balance
                           "
@@ -357,7 +357,7 @@
                         >
                           {{ t("admin.settings.defaults.defaultConcurrency") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.defaults.defaultConcurrency')"
                           v-model.number="
                             authSourceDefaults[authSource.source].concurrency
                           "
@@ -384,7 +384,7 @@
                           {{ t("admin.settings.authSourceDefaults.grantOnFirstBindHint") }}
                         </p>
                       </div>
-                      <Toggle
+                      <Toggle :aria-label="t('admin.settings.authSourceDefaults.grantOnFirstBindLabel')"
                         v-model="
                           authSourceDefaults[authSource.source]
                             .grant_on_first_bind
@@ -441,7 +441,7 @@
                           >
                             {{ t("admin.settings.defaults.subscriptionGroup") }}
                           </label>
-                          <Select
+                          <Select :aria-label="t('admin.settings.defaults.subscriptionGroup')"
                             v-model="item.group_id"
                             class="default-sub-group-select"
                             :options="defaultSubscriptionGroupOptions"
@@ -521,7 +521,7 @@
                               )
                             }}
                           </label>
-                          <input
+                          <input :aria-label="t( 'admin.settings.defaults.subscriptionValidityDays', )"
                             v-model.number="item.validity_days"
                             type="number"
                             min="1"

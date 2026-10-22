@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <AppLayout table-density>
     <div class="space-y-4">
       <!-- Actions -->
       <div class="flex items-center justify-end gap-2">

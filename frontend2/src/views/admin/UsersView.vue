@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <AppLayout table-page>
     <TablePageLayout>
       <!-- Single Row: Search, Filters, and Actions -->
       <template #filters>

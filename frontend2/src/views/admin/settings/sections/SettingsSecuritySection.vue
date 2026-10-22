@@ -180,7 +180,7 @@
                     }}
                   </p>
                 </div>
-                <Toggle v-model="form.registration_enabled" />
+                <Toggle :aria-label="t('admin.settings.registration.enableRegistration')" v-model="form.registration_enabled" />
               </div>
 
               <!-- Email Verification -->
@@ -195,7 +195,7 @@
                     {{ t("admin.settings.registration.emailVerificationHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.email_verify_enabled" />
+                <Toggle :aria-label="t('admin.settings.registration.emailVerification')" v-model="form.email_verify_enabled" />
               </div>
 
               <!-- Email Suffix Whitelist -->
@@ -279,7 +279,7 @@
                     {{ t("admin.settings.registration.emailDomainQuotaHint") }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t('admin.settings.registration.emailDomainQuota')"
                   v-model="form.registration_email_domain_quota_enabled"
                 />
               </div>
@@ -296,7 +296,7 @@
                     {{ t("admin.settings.registration.promoCodeHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.promo_code_enabled" />
+                <Toggle :aria-label="t('admin.settings.registration.promoCode')" v-model="form.promo_code_enabled" />
               </div>
 
               <!-- Invitation Code -->
@@ -311,7 +311,7 @@
                     {{ t("admin.settings.registration.invitationCodeHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.invitation_code_enabled" />
+                <Toggle :aria-label="t('admin.settings.registration.invitationCode')" v-model="form.invitation_code_enabled" />
               </div>
               <!-- Password Reset - Only show when email verification is enabled -->
               <div
@@ -326,7 +326,7 @@
                     {{ t("admin.settings.registration.passwordResetHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.password_reset_enabled" />
+                <Toggle :aria-label="t('admin.settings.registration.passwordReset')" v-model="form.password_reset_enabled" />
               </div>
               <!-- Frontend URL - Only show when password reset is enabled -->
               <div
@@ -338,7 +338,7 @@
                 >
                   {{ t("admin.settings.registration.frontendUrl") }}
                 </label>
-                <input
+                <input :aria-label="t('admin.settings.registration.frontendUrl')"
                   v-model="form.frontend_url"
                   type="url"
                   class="input"
@@ -370,7 +370,7 @@
                     {{ t("admin.settings.registration.totpKeyNotConfigured") }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t('admin.settings.registration.totp')"
                   v-model="form.totp_enabled"
                   :disabled="!form.totp_encryption_key_configured"
                 />
@@ -390,7 +390,7 @@
                       {{ t("admin.settings.security.passkeyHint") }}
                     </p>
                   </div>
-                  <Toggle
+                  <Toggle :aria-label="t('admin.settings.security.passkey')"
                     v-model="form.passkey_enabled"
                     data-testid="passkey-toggle"
                     :disabled="!form.passkey_configured"
@@ -447,7 +447,7 @@
                     {{ t("admin.settings.security.stepUpHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.step_up_enabled" />
+                <Toggle :aria-label="t('admin.settings.security.stepUp')" v-model="form.step_up_enabled" />
               </div>
 
               <!-- 会话 IP/UA 绑定 -->
@@ -462,7 +462,7 @@
                     {{ t("admin.settings.security.sessionBindingHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.session_binding_enabled" />
+                <Toggle :aria-label="t('admin.settings.security.sessionBinding')" v-model="form.session_binding_enabled" />
               </div>
 
               <!-- 审计日志保留天数 -->
@@ -509,7 +509,7 @@
                     {{ t("admin.settings.apiKeyAcl.trustForwardedIpHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.api_key_acl_trust_forwarded_ip" />
+                <Toggle :aria-label="t('admin.settings.apiKeyAcl.trustForwardedIp')" v-model="form.api_key_acl_trust_forwarded_ip" />
               </div>
 
               <div
@@ -630,7 +630,7 @@
                       {{ t("admin.settings.panelRateLimit.enabledHint") }}
                     </p>
                   </div>
-                  <Toggle v-model="panelRateLimitForm.enabled" />
+                  <Toggle :aria-label="t('admin.settings.panelRateLimit.enabled')" v-model="panelRateLimitForm.enabled" />
                 </div>
 
                 <div
@@ -720,7 +720,7 @@
                         {{ t("admin.settings.panelRateLimit.exemptAdminHint") }}
                       </p>
                     </div>
-                    <Toggle v-model="panelRateLimitForm.exempt_admin" />
+                    <Toggle :aria-label="t('admin.settings.panelRateLimit.exemptAdmin')" v-model="panelRateLimitForm.exempt_admin" />
                   </div>
                 </div>
 
@@ -788,7 +788,7 @@
                     {{ t("admin.settings.captcha.enableHint") }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t('admin.settings.captcha.enable')"
                   v-model="captchaMasterEnabled"
                   data-testid="captcha-enabled-toggle"
                 />
@@ -862,7 +862,7 @@
                     >
                       {{ t("admin.settings.turnstile.siteKey") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.turnstile.siteKey')"
                       v-model="form.turnstile_site_key"
                       type="text"
                       class="input font-mono text-sm"
@@ -886,7 +886,7 @@
                     >
                       {{ t("admin.settings.turnstile.secretKey") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.turnstile.secretKey')"
                       v-model="form.turnstile_secret_key"
                       type="password"
                       class="input font-mono text-sm"
@@ -955,7 +955,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ t("admin.settings.tencentCaptcha.appId") }}
                       </label>
-                      <input
+                      <input :aria-label="t('admin.settings.tencentCaptcha.appId')"
                         v-model="form.tencent_captcha_app_id"
                         type="text"
                         inputmode="numeric"
@@ -967,7 +967,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ t("admin.settings.tencentCaptcha.appSecretKey") }}
                       </label>
-                      <input
+                      <input :aria-label="t('admin.settings.tencentCaptcha.appSecretKey')"
                         v-model="form.tencent_captcha_app_secret_key"
                         type="password"
                         autocomplete="new-password"
@@ -990,7 +990,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ t("admin.settings.tencentCaptcha.cloudSecretId") }}
                       </label>
-                      <input
+                      <input :aria-label="t('admin.settings.tencentCaptcha.cloudSecretId')"
                         v-model="form.tencent_captcha_cloud_secret_id"
                         type="password"
                         autocomplete="new-password"
@@ -1005,7 +1005,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ t("admin.settings.tencentCaptcha.cloudSecretKey") }}
                       </label>
-                      <input
+                      <input :aria-label="t('admin.settings.tencentCaptcha.cloudSecretKey')"
                         v-model="form.tencent_captcha_cloud_secret_key"
                         type="password"
                         autocomplete="new-password"
@@ -1098,7 +1098,7 @@
                       >
                         {{ t("admin.settings.aliyunCaptcha.prefix") }}
                       </label>
-                      <input
+                      <input :aria-label="t('admin.settings.aliyunCaptcha.prefix')"
                         v-model="form.aliyun_captcha_prefix"
                         type="text"
                         class="input font-mono text-sm"
@@ -1115,7 +1115,7 @@
                     >
                       {{ t("admin.settings.aliyunCaptcha.sceneId") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.aliyunCaptcha.sceneId')"
                       v-model="form.aliyun_captcha_scene_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -1131,7 +1131,7 @@
                     >
                       {{ t("admin.settings.aliyunCaptcha.accessKeyId") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.aliyunCaptcha.accessKeyId')"
                       v-model="form.aliyun_captcha_access_key_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -1147,7 +1147,7 @@
                     >
                       {{ t("admin.settings.aliyunCaptcha.accessKeySecret") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.aliyunCaptcha.accessKeySecret')"
                       v-model="form.aliyun_captcha_access_key_secret"
                       type="password"
                       autocomplete="new-password"
@@ -1191,7 +1191,7 @@
                     {{ t("admin.settings.linuxdo.enableHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.linuxdo_connect_enabled" />
+                <Toggle :aria-label="t('admin.settings.linuxdo.enable')" v-model="form.linuxdo_connect_enabled" />
               </div>
 
               <div
@@ -1205,7 +1205,7 @@
                     >
                       {{ t("admin.settings.linuxdo.clientId") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.linuxdo.clientId')"
                       v-model="form.linuxdo_connect_client_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -1224,7 +1224,7 @@
                     >
                       {{ t("admin.settings.linuxdo.clientSecret") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.linuxdo.clientSecret')"
                       v-model="form.linuxdo_connect_client_secret"
                       type="password"
                       class="input font-mono text-sm"
@@ -1253,7 +1253,7 @@
                     >
                       {{ t("admin.settings.linuxdo.redirectUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.linuxdo.redirectUrl')"
                       v-model="form.linuxdo_connect_redirect_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -1321,7 +1321,7 @@
                         }}
                       </p>
                     </div>
-                    <Toggle v-model="form.github_oauth_enabled" />
+                    <Toggle :aria-label="'GitHub'" v-model="form.github_oauth_enabled" />
                   </div>
 
                   <div v-if="form.github_oauth_enabled" class="mt-4 space-y-4">
@@ -1379,7 +1379,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ localText("后端回调地址", "Backend Callback URL") }}
                       </label>
-                      <input
+                      <input :aria-label="localText('后端回调地址', 'Backend Callback URL')"
                         v-model="form.github_oauth_redirect_url"
                         type="url"
                         class="input font-mono text-sm"
@@ -1406,7 +1406,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ localText("前端回跳地址", "Frontend Callback URL") }}
                       </label>
-                      <input
+                      <input :aria-label="localText('前端回跳地址', 'Frontend Callback URL')"
                         v-model="form.github_oauth_frontend_redirect_url"
                         type="text"
                         class="input font-mono text-sm"
@@ -1431,7 +1431,7 @@
                         }}
                       </p>
                     </div>
-                    <Toggle v-model="form.google_oauth_enabled" />
+                    <Toggle :aria-label="'Google'" v-model="form.google_oauth_enabled" />
                   </div>
 
                   <div v-if="form.google_oauth_enabled" class="mt-4 space-y-4">
@@ -1473,7 +1473,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ localText("后端回调地址", "Backend Callback URL") }}
                       </label>
-                      <input
+                      <input :aria-label="localText('后端回调地址', 'Backend Callback URL')"
                         v-model="form.google_oauth_redirect_url"
                         type="url"
                         class="input font-mono text-sm"
@@ -1500,7 +1500,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ localText("前端回跳地址", "Frontend Callback URL") }}
                       </label>
-                      <input
+                      <input :aria-label="localText('前端回跳地址', 'Frontend Callback URL')"
                         v-model="form.google_oauth_frontend_redirect_url"
                         type="text"
                         class="input font-mono text-sm"
@@ -1535,7 +1535,7 @@
                     {{ t("admin.settings.wechatConnect.enabledHint") }}
                   </p>
                 </div>
-                <Toggle
+                <Toggle :aria-label="t('admin.settings.wechatConnect.enabledLabel')"
                   v-model="form.wechat_connect_enabled"
                   data-testid="wechat-connect-enabled"
                 />
@@ -1563,7 +1563,7 @@
                           }}
                         </p>
                       </div>
-                      <Toggle
+                      <Toggle :aria-label="localText('PC 应用', 'PC App')"
                         :model-value="form.wechat_connect_open_enabled"
                         data-testid="wechat-connect-open-enabled"
                         @update:model-value="handleWeChatOpenEnabledChange"
@@ -1579,7 +1579,7 @@
                         >
                           {{ localText("PC AppID", "PC App ID") }}
                         </label>
-                        <input
+                        <input :aria-label="localText('PC AppID', 'PC App ID')"
                           v-model="form.wechat_connect_open_app_id"
                           data-testid="wechat-connect-open-app-id"
                           type="text"
@@ -1598,7 +1598,7 @@
                         >
                           {{ localText("PC AppSecret", "PC App Secret") }}
                         </label>
-                        <input
+                        <input :aria-label="localText('PC AppSecret', 'PC App Secret')"
                           v-model="form.wechat_connect_open_app_secret"
                           data-testid="wechat-connect-open-app-secret"
                           type="password"
@@ -1636,7 +1636,7 @@
                           }}
                         </p>
                       </div>
-                      <Toggle
+                      <Toggle :aria-label="localText('公众号', 'Official Account')"
                         :model-value="form.wechat_connect_mp_enabled"
                         data-testid="wechat-connect-mp-enabled"
                         @update:model-value="handleWeChatMPEnabledChange"
@@ -1652,7 +1652,7 @@
                         >
                           {{ localText("公众号 AppID", "Official Account App ID") }}
                         </label>
-                        <input
+                        <input :aria-label="localText('公众号 AppID', 'Official Account App ID')"
                           v-model="form.wechat_connect_mp_app_id"
                           data-testid="wechat-connect-mp-app-id"
                           type="text"
@@ -1676,7 +1676,7 @@
                             )
                           }}
                         </label>
-                        <input
+                        <input :aria-label="localText( '公众号 AppSecret', 'Official Account App Secret', )"
                           v-model="form.wechat_connect_mp_app_secret"
                           data-testid="wechat-connect-mp-app-secret"
                           type="password"
@@ -1714,7 +1714,7 @@
                           }}
                         </p>
                       </div>
-                      <Toggle
+                      <Toggle :aria-label="localText('移动应用', 'Mobile App')"
                         :model-value="form.wechat_connect_mobile_enabled"
                         data-testid="wechat-connect-mobile-enabled"
                         @update:model-value="handleWeChatMobileEnabledChange"
@@ -1730,7 +1730,7 @@
                         >
                           {{ localText("移动应用 AppID", "Mobile App ID") }}
                         </label>
-                        <input
+                        <input :aria-label="localText('移动应用 AppID', 'Mobile App ID')"
                           v-model="form.wechat_connect_mobile_app_id"
                           data-testid="wechat-connect-mobile-app-id"
                           type="text"
@@ -1749,7 +1749,7 @@
                         >
                           {{ localText("移动应用 AppSecret", "Mobile App Secret") }}
                         </label>
-                        <input
+                        <input :aria-label="localText('移动应用 AppSecret', 'Mobile App Secret')"
                           v-model="form.wechat_connect_mobile_app_secret"
                           data-testid="wechat-connect-mobile-app-secret"
                           type="password"
@@ -1799,7 +1799,7 @@
                         )
                       }}
                     </label>
-                    <input
+                    <input :aria-label="localText( '浏览器回调地址', 'Browser Redirect URL', )"
                       data-testid="wechat-connect-redirect-url"
                       v-model="form.wechat_connect_redirect_url"
                       type="url"
@@ -1840,7 +1840,7 @@
                   >
                     {{ t("admin.settings.wechatConnect.frontendRedirectUrlLabel") }}
                   </label>
-                  <input
+                  <input :aria-label="t('admin.settings.wechatConnect.frontendRedirectUrlLabel')"
                     data-testid="wechat-connect-frontend-redirect-url"
                     v-model="form.wechat_connect_frontend_redirect_url"
                     type="text"
@@ -1877,7 +1877,7 @@
                     {{ t("admin.settings.dingtalk.enableHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.dingtalk_connect_enabled" />
+                <Toggle :aria-label="t('admin.settings.dingtalk.enable')" v-model="form.dingtalk_connect_enabled" />
               </div>
 
               <div
@@ -1891,7 +1891,7 @@
                     >
                       {{ t("admin.settings.dingtalk.clientId") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.dingtalk.clientId')"
                       v-model="form.dingtalk_connect_client_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -1910,7 +1910,7 @@
                     >
                       {{ t("admin.settings.dingtalk.clientSecret") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.dingtalk.clientSecret')"
                       v-model="form.dingtalk_connect_client_secret"
                       type="password"
                       class="input font-mono text-sm"
@@ -1939,7 +1939,7 @@
                     >
                       {{ t("admin.settings.dingtalk.redirectUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.dingtalk.redirectUrl')"
                       v-model="form.dingtalk_connect_redirect_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -1999,7 +1999,7 @@
                         {{ t("admin.settings.dingtalk.bypassRegistrationHint") }}
                       </p>
                     </div>
-                    <Toggle v-model="form.dingtalk_connect_bypass_registration" />
+                    <Toggle :aria-label="t('admin.settings.dingtalk.bypassRegistration')" v-model="form.dingtalk_connect_bypass_registration" />
                   </div>
 
                   <!-- 身份同步开关（仅 internal_only 模式下可见） -->
@@ -2016,14 +2016,14 @@
                           {{ t("admin.settings.dingtalk.syncDisplayNameHint") }}
                         </p>
                       </div>
-                      <Toggle v-model="form.dingtalk_connect_sync_display_name" />
+                      <Toggle :aria-label="t('admin.settings.dingtalk.syncDisplayName')" v-model="form.dingtalk_connect_sync_display_name" />
                     </div>
                     <div v-if="form.dingtalk_connect_sync_display_name" class="space-y-2">
                       <div class="flex items-center gap-2">
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncDisplayNameTarget") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.dingtalk.syncDisplayNameTarget')"
                           v-model="form.dingtalk_connect_sync_display_name_attr_key"
                           type="text"
                           placeholder="dingtalk_name"
@@ -2034,7 +2034,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncAttrDisplayName") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.dingtalk.syncAttrDisplayName')"
                           v-model="form.dingtalk_connect_sync_display_name_attr_name"
                           type="text"
                           :placeholder="localText('钉钉姓名', 'DingTalk Name')"
@@ -2062,14 +2062,14 @@
                           {{ t("admin.settings.dingtalk.syncCorpEmailPermissionHint") }}
                         </p>
                       </div>
-                      <Toggle v-model="form.dingtalk_connect_sync_corp_email" />
+                      <Toggle :aria-label="t('admin.settings.dingtalk.syncCorpEmail')" v-model="form.dingtalk_connect_sync_corp_email" />
                     </div>
                     <div v-if="form.dingtalk_connect_sync_corp_email" class="space-y-2">
                       <div class="flex items-center gap-2">
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncCorpEmailTarget") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.dingtalk.syncCorpEmailTarget')"
                           v-model="form.dingtalk_connect_sync_corp_email_attr_key"
                           type="text"
                           placeholder="dingtalk_email"
@@ -2080,7 +2080,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncAttrDisplayName") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.dingtalk.syncAttrDisplayName')"
                           v-model="form.dingtalk_connect_sync_corp_email_attr_name"
                           type="text"
                           :placeholder="localText('钉钉企业邮箱', 'DingTalk Corporate Email')"
@@ -2108,14 +2108,14 @@
                           {{ t("admin.settings.dingtalk.syncDeptPermissionHint") }}
                         </p>
                       </div>
-                      <Toggle v-model="form.dingtalk_connect_sync_dept" />
+                      <Toggle :aria-label="t('admin.settings.dingtalk.syncDept')" v-model="form.dingtalk_connect_sync_dept" />
                     </div>
                     <div v-if="form.dingtalk_connect_sync_dept" class="space-y-2">
                       <div class="flex items-center gap-2">
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncDeptTarget") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.dingtalk.syncDeptTarget')"
                           v-model="form.dingtalk_connect_sync_dept_attr_key"
                           type="text"
                           placeholder="dingtalk_department"
@@ -2126,7 +2126,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncAttrDisplayName") }}
                         </label>
-                        <input
+                        <input :aria-label="t('admin.settings.dingtalk.syncAttrDisplayName')"
                           v-model="form.dingtalk_connect_sync_dept_attr_name"
                           type="text"
                           :placeholder="localText('钉钉部门', 'DingTalk Department')"
@@ -2165,7 +2165,7 @@
                     {{ t("admin.settings.oidc.enableHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.oidc_connect_enabled" />
+                <Toggle :aria-label="t('admin.settings.oidc.enable')" v-model="form.oidc_connect_enabled" />
               </div>
 
               <div
@@ -2179,7 +2179,7 @@
                     >
                       {{ t("admin.settings.oidc.providerName") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.providerName')"
                       v-model="form.oidc_connect_provider_name"
                       type="text"
                       class="input"
@@ -2195,7 +2195,7 @@
                     >
                       {{ t("admin.settings.oidc.clientId") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.clientId')"
                       v-model="form.oidc_connect_client_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -2211,7 +2211,7 @@
                     >
                       {{ t("admin.settings.oidc.clientSecret") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.clientSecret')"
                       v-model="form.oidc_connect_client_secret"
                       type="password"
                       class="input font-mono text-sm"
@@ -2240,7 +2240,7 @@
                     >
                       {{ t("admin.settings.oidc.issuerUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.issuerUrl')"
                       v-model="form.oidc_connect_issuer_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -2256,7 +2256,7 @@
                     >
                       {{ t("admin.settings.oidc.discoveryUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.discoveryUrl')"
                       v-model="form.oidc_connect_discovery_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -2272,7 +2272,7 @@
                     >
                       {{ t("admin.settings.oidc.authorizeUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.authorizeUrl')"
                       v-model="form.oidc_connect_authorize_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -2288,7 +2288,7 @@
                     >
                       {{ t("admin.settings.oidc.tokenUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.tokenUrl')"
                       v-model="form.oidc_connect_token_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -2304,7 +2304,7 @@
                     >
                       {{ t("admin.settings.oidc.userinfoUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.userinfoUrl')"
                       v-model="form.oidc_connect_userinfo_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -2320,7 +2320,7 @@
                     >
                       {{ t("admin.settings.oidc.jwksUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.jwksUrl')"
                       v-model="form.oidc_connect_jwks_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -2336,7 +2336,7 @@
                     >
                       {{ t("admin.settings.oidc.scopes") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.scopes')"
                       v-model="form.oidc_connect_scopes"
                       type="text"
                       class="input font-mono text-sm"
@@ -2353,7 +2353,7 @@
                     >
                       {{ t("admin.settings.oidc.redirectUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.redirectUrl')"
                       v-model="form.oidc_connect_redirect_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -2389,7 +2389,7 @@
                     >
                       {{ t("admin.settings.oidc.frontendRedirectUrl") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.frontendRedirectUrl')"
                       v-model="form.oidc_connect_frontend_redirect_url"
                       type="text"
                       class="input font-mono text-sm"
@@ -2430,7 +2430,7 @@
                     >
                       {{ t("admin.settings.oidc.clockSkewSeconds") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.clockSkewSeconds')"
                       v-model.number="form.oidc_connect_clock_skew_seconds"
                       type="number"
                       min="0"
@@ -2445,7 +2445,7 @@
                     >
                       {{ t("admin.settings.oidc.allowedSigningAlgs") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.allowedSigningAlgs')"
                       v-model="form.oidc_connect_allowed_signing_algs"
                       type="text"
                       class="input font-mono text-sm"
@@ -2465,7 +2465,7 @@
                         {{ t("admin.settings.oidc.usePkce") }}
                       </label>
                     </div>
-                    <Toggle
+                    <Toggle :aria-label="t('admin.settings.oidc.usePkce')"
                       v-model="form.oidc_connect_use_pkce"
                       data-testid="oidc-connect-use-pkce"
                     />
@@ -2479,7 +2479,7 @@
                         {{ t("admin.settings.oidc.validateIdToken") }}
                       </label>
                     </div>
-                    <Toggle
+                    <Toggle :aria-label="t('admin.settings.oidc.validateIdToken')"
                       v-model="form.oidc_connect_validate_id_token"
                       data-testid="oidc-connect-validate-id-token"
                     />
@@ -2493,7 +2493,7 @@
                         {{ t("admin.settings.oidc.requireEmailVerified") }}
                       </label>
                     </div>
-                    <Toggle
+                    <Toggle :aria-label="t('admin.settings.oidc.requireEmailVerified')"
                       v-model="form.oidc_connect_require_email_verified"
                     />
                   </div>
@@ -2506,7 +2506,7 @@
                     >
                       {{ t("admin.settings.oidc.userinfoEmailPath") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.userinfoEmailPath')"
                       v-model="form.oidc_connect_userinfo_email_path"
                       type="text"
                       class="input font-mono text-sm"
@@ -2522,7 +2522,7 @@
                     >
                       {{ t("admin.settings.oidc.userinfoIdPath") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.userinfoIdPath')"
                       v-model="form.oidc_connect_userinfo_id_path"
                       type="text"
                       class="input font-mono text-sm"
@@ -2538,7 +2538,7 @@
                     >
                       {{ t("admin.settings.oidc.userinfoUsernamePath") }}
                     </label>
-                    <input
+                    <input :aria-label="t('admin.settings.oidc.userinfoUsernamePath')"
                       v-model="form.oidc_connect_userinfo_username_path"
                       type="text"
                       class="input font-mono text-sm"

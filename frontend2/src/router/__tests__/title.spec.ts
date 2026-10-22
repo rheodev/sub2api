@@ -7,6 +7,7 @@ vi.mock('@/i18n', () => {
     'nav.recharge': '充值',
     'nav.subscribe': '订阅',
     'nav.buySubscription': '充值/订阅',
+    'portal.defaultName': 'AI 空间',
   }
   return { i18n: { global: { t: (key: string) => messages[key] ?? key } } }
 })
@@ -35,6 +36,13 @@ describe('resolveDocumentTitle', () => {
 })
 
 describe('resolveRouteDocumentTitle', () => {
+  it('默认首页标题使用面向用户的名称并保留自定义品牌', () => {
+    const route = { name: 'Home', params: {}, meta: { title: 'Home' } }
+    expect(resolveRouteDocumentTitle(route, 'Sub2API')).toBe('AI 空间')
+    expect(resolveRouteDocumentTitle(route, '')).toBe('AI 空间')
+    expect(resolveRouteDocumentTitle(route, 'My AI')).toBe('Home - My AI')
+  })
+
   it('自定义页面菜单加载后，使用菜单名称作为标题', () => {
     const route = {
       name: 'CustomPage',

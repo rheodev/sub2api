@@ -5,6 +5,8 @@
       <div class="flex shrink-0 items-center gap-2 sm:gap-4">
         <button
           @click="toggleMobileSidebar"
+          aria-controls="workspace-navigation"
+          :aria-expanded="appStore.mobileOpen"
           class="btn-ghost btn-icon lg:hidden"
           :aria-label="t('common.toggleMenu')"
         >

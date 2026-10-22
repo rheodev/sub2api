@@ -1,16 +1,8 @@
 <template>
-  <AppLayout>
+  <AppLayout table-page>
     <TablePageLayout>
-      <template #filters>
-        <div class="flex flex-wrap-reverse items-start justify-between gap-3">
-          <AccountTableFilters
-            v-model:searchQuery="params.search"
-            :filters="params"
-            :groups="groups"
-            @update:filters="(newFilters) => Object.assign(params, newFilters)"
-            @change="debouncedReload"
-            @update:searchQuery="debouncedReload"
-          />
+      <template #actions>
+        <div class="flex flex-wrap justify-end gap-3">
           <AccountTableActions
             :loading="loading"
             @refresh="handleManualRefresh"
@@ -161,6 +153,19 @@
             </template>
           </AccountTableActions>
         </div>
+      </template>
+      <template #filters>
+        <div class="flex flex-wrap items-start gap-3">
+          <AccountTableFilters
+            v-model:searchQuery="params.search"
+            :filters="params"
+            :groups="groups"
+            @update:filters="(newFilters) => Object.assign(params, newFilters)"
+            @change="debouncedReload"
+            @update:searchQuery="debouncedReload"
+          />
+
+        </div>
         <div
           v-if="hasPendingListSync"
           class="mt-2 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700/40 dark:bg-amber-900/20 dark:text-amber-200"
@@ -207,6 +212,13 @@
           :overscan="5"
           :virtualize-threshold="50"
         >
+          <template #empty>
+            <div class="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-8 text-center">
+              <Icon name="server" size="lg" class="text-gray-400" />
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('workspace.accountsEmptyHint') }}</p>
+              <button type="button" class="btn btn-primary" @click="showCreate = true">{{ t('admin.accounts.createAccount') }}</button>
+            </div>
+          </template>
           <template #header-select>
             <input
               type="checkbox"
@@ -454,16 +466,16 @@
       </template>
       <template #pagination><Pagination v-if="pagination.total > 0" :page="pagination.page" :total="pagination.total" :page-size="pagination.page_size" @update:page="handlePageChange" @update:pageSize="handlePageSizeChange" /></template>
     </TablePageLayout>
-    <CreateAccountModal :show="showCreate" :proxies="proxies" :groups="groups" @close="showCreate = false" @created="reload" />
-    <EditAccountModal :show="showEdit" :account="edAcc" :proxies="proxies" :groups="groups" @close="showEdit = false" @updated="handleAccountUpdated" />
+    <CreateAccountModal v-if="showCreate" :show="showCreate" :proxies="proxies" :groups="groups" @close="showCreate = false" @created="reload" />
+    <EditAccountModal v-if="showEdit" :show="showEdit" :account="edAcc" :proxies="proxies" :groups="groups" @close="showEdit = false" @updated="handleAccountUpdated" />
     <ReAuthAccountModal :show="showReAuth" :account="reAuthAcc" @close="closeReAuthModal" @reauthorized="handleAccountUpdated" />
     <AccountTestModal :show="showTest" :account="testingAcc" @close="closeTestModal" />
     <AccountStatsModal :show="showStats" :account="statsAcc" @close="closeStatsModal" />
     <ScheduledTestsPanel :show="showSchedulePanel" :account-id="scheduleAcc?.id ?? null" :model-options="scheduleModelOptions" @close="closeSchedulePanel" />
     <AccountActionMenu :show="menu.show" :account="menu.acc" :anchor-rect="menu.anchorRect" @close="menu.show = false" @test="handleTest" @stats="handleViewStats" @schedule="handleSchedule" @duplicate="handleDuplicateAccount" @reauth="handleReAuth" @refresh-token="handleRefresh" @recover-state="handleRecoverState" @reset-quota="handleResetQuota" @set-privacy="handleSetPrivacy" @create-spark-shadow="handleCreateSparkShadow" />
-    <SyncFromCrsModal :show="showSync" @close="showSync = false" @synced="reload" />
+    <SyncFromCrsModal v-if="showSync" :show="showSync" @close="showSync = false" @synced="reload" />
     <ImportDataModal :show="showImportData" @close="showImportData = false" @imported="handleDataImported" />
-    <BulkEditAccountModal
+    <BulkEditAccountModal v-if="showBulkEdit"
       :show="showBulkEdit"
       :account-ids="selIds"
       :selected-platforms="selPlatforms"
@@ -490,7 +502,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, toRaw, watch } from 'vue'
+import { defineAsyncComponent, ref, reactive, computed, onMounted, onUnmounted, toRaw, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
@@ -508,7 +520,11 @@ import DataTable from '@/components/common/DataTable.vue'
 import HelpTooltip from '@/components/common/HelpTooltip.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
-import { CreateAccountModal, EditAccountModal, BulkEditAccountModal, SyncFromCrsModal, TempUnschedStatusModal } from '@/components/account'
+import TempUnschedStatusModal from '@/components/account/TempUnschedStatusModal.vue'
+const CreateAccountModal = defineAsyncComponent(() => import('@/components/account/CreateAccountModal.vue'))
+const EditAccountModal = defineAsyncComponent(() => import('@/components/account/EditAccountModal.vue'))
+const BulkEditAccountModal = defineAsyncComponent(() => import('@/components/account/BulkEditAccountModal.vue'))
+const SyncFromCrsModal = defineAsyncComponent(() => import('@/components/account/SyncFromCrsModal.vue'))
 import AccountTableActions from '@/components/admin/account/AccountTableActions.vue'
 import AccountTableFilters from '@/components/admin/account/AccountTableFilters.vue'
 import AccountBulkActionsBar from '@/components/admin/account/AccountBulkActionsBar.vue'

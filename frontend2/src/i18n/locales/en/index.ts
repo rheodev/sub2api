@@ -1,3 +1,4 @@
+import portal from './portal'
 import workspace from './workspace'
 import landing from './landing'
 import common from './common'
@@ -8,6 +9,7 @@ import admin from './admin'
 import misc from './misc'
 
 export default {
+  ...portal,
   ...workspace,
   ...landing,
   ...common,

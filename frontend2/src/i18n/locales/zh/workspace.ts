@@ -1,5 +1,14 @@
 export default {
   "workspace": {
+    "accountSetupHint": "添加上游账号，检查可用状态与配额",
+    "accountsEmptyHint": "当前没有可显示的账号，可调整筛选条件，或添加上游账号开始配置。",
+    "unsavedChanges": "有未保存的更改",
+    "settingsUpToDate": "设置已同步",
+    "leaveSettingsMessage": "离开后，本次未保存的更改将丢失。是否放弃更改？",
+    "discardChanges": "放弃更改并离开",
+    "keepEditing": "继续编辑",
+
+    "navigation": "功能导航",
     "sortBy": "排序",
     "chooseSort": "选择排序字段",
     "ascending": "升序",
@@ -10,8 +19,8 @@ export default {
     "noNavigationResults": "没有匹配的功能",
     "standardDensity": "切换标准表格密度",
     "compactDensity": "切换紧凑表格密度",
-    "standard": "标准视图",
-    "compact": "紧凑视图",
+    "standard": "标准密度",
+    "compact": "紧凑密度",
     "home": "返回首页",
     "authTitle": "连接模型，专注创造。",
     "authDescription": "在同一个工作空间中管理 API 密钥、查看用量与安排额度。",

@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <AppLayout table-page>
     <TablePageLayout>
       <!-- Filters -->
       <template #filters>

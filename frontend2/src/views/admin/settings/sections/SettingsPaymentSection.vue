@@ -45,7 +45,7 @@
                     {{ t("admin.settings.payment.enabledHint") }}
                   </p>
                 </div>
-                <Toggle v-model="form.payment_enabled" />
+                <Toggle :aria-label="t('admin.settings.payment.enabled')" v-model="form.payment_enabled" />
               </div>
               <template v-if="form.payment_enabled">
                 <!-- Row 1: Product name -->
@@ -54,7 +54,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.productNamePrefix")
                     }}</label
-                    ><input
+                    ><input :aria-label="t('admin.settings.payment.productNamePrefix')"
                       v-model="form.payment_product_name_prefix"
                       type="text"
                       class="input"
@@ -65,7 +65,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.productNameSuffix")
                     }}</label
-                    ><input
+                    ><input :aria-label="t('admin.settings.payment.productNameSuffix')"
                       v-model="form.payment_product_name_suffix"
                       type="text"
                       class="input"
@@ -93,7 +93,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.minAmount")
                     }}</label
-                    ><input
+                    ><input :aria-label="t('admin.settings.payment.minAmount')"
                       :value="form.payment_min_amount || ''"
                       @input="
                         form.payment_min_amount =
@@ -112,7 +112,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.maxAmount")
                     }}</label
-                    ><input
+                    ><input :aria-label="t('admin.settings.payment.maxAmount')"
                       :value="form.payment_max_amount || ''"
                       @input="
                         form.payment_max_amount =
@@ -131,7 +131,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.dailyLimit")
                     }}</label
-                    ><input
+                    ><input :aria-label="t('admin.settings.payment.dailyLimit')"
                       :value="form.payment_daily_limit || ''"
                       @input="
                         form.payment_daily_limit =
@@ -150,7 +150,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.balanceRechargeMultiplier")
                     }}</label>
-                    <input
+                    <input :aria-label="t('admin.settings.payment.balanceRechargeMultiplier')"
                       :value="form.payment_balance_recharge_multiplier || ''"
                       @input="
                         form.payment_balance_recharge_multiplier =
@@ -187,7 +187,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.subscriptionUsdToCnyRate")
                     }}</label>
-                    <input
+                    <input :aria-label="t('admin.settings.payment.subscriptionUsdToCnyRate')"
                       :value="form.payment_subscription_usd_to_cny_rate || ''"
                       @input="
                         form.payment_subscription_usd_to_cny_rate =
@@ -263,7 +263,7 @@
                     <label class="input-label"
                       >{{ t("admin.settings.payment.orderTimeout") }}
                       <span class="text-red-500">*</span></label
-                    ><input
+                    ><input :aria-label="t('admin.settings.payment.orderTimeout')"
                       v-model.number="form.payment_order_timeout_minutes"
                       type="number"
                       min="1"
@@ -281,7 +281,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.maxPendingOrders")
                     }}</label
-                    ><input
+                    ><input :aria-label="t('admin.settings.payment.maxPendingOrders')"
                       v-model.number="form.payment_max_pending_orders"
                       type="number"
                       min="1"
@@ -292,7 +292,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.loadBalanceStrategy")
                     }}</label>
-                    <Select
+                    <Select :aria-label="t('admin.settings.payment.loadBalanceStrategy')"
                       v-model="form.payment_load_balance_strategy"
                       :options="loadBalanceOptions"
                       class="w-40"
@@ -518,7 +518,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.helpText")
                     }}</label>
-                    <textarea
+                    <textarea :aria-label="t('admin.settings.payment.helpText')"
                       v-model="form.payment_help_text"
                       rows="3"
                       class="input"

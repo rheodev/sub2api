@@ -21,7 +21,7 @@
 	                  <span class="text-sm text-gray-600 dark:text-gray-300">
 	                    {{ form.login_agreement_enabled ? localText("已启用", "Enabled") : localText("未启用", "Disabled") }}
 	                  </span>
-	                  <Toggle v-model="form.login_agreement_enabled" />
+	                  <Toggle :aria-label="localText('登录条款确认', 'Login agreement')" v-model="form.login_agreement_enabled" />
 	                </div>
 	              </div>
 	            </div>
@@ -73,7 +73,7 @@
                   <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {{ localText("条款更新日期", "Updated date") }}
                   </label>
-                  <input
+                  <input :aria-label="localText('条款更新日期', 'Updated date')"
                     v-model="form.login_agreement_updated_at"
                     type="date"
                     class="input"
@@ -158,7 +158,7 @@
                         <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
                           {{ localText("文档名称", "Document title") }}
                         </label>
-                        <input
+                        <input :aria-label="localText('文档名称', 'Document title')"
                           v-model="doc.title"
                           type="text"
                           class="input text-sm"
@@ -186,7 +186,7 @@
                       <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
                         {{ localText("Markdown 内容", "Markdown content") }}
                       </label>
-                        <textarea
+                        <textarea :aria-label="localText('Markdown 内容', 'Markdown content')"
                           v-model="doc.content_md"
                           rows="8"
                           class="input font-mono text-sm"

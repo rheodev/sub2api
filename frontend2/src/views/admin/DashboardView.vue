@@ -7,14 +7,12 @@
       </div>
 
       <template v-else-if="stats">
+        <div class="admin-metrics-panel">
         <!-- Row 1: Core Stats -->
-        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="admin-metrics-grid">
           <!-- Total API Keys -->
-          <div class="card p-4">
+          <div class="admin-metric">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
-                <Icon name="key" size="md" class="text-blue-600 dark:text-blue-400" :stroke-width="2" />
-              </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {{ t('admin.dashboard.apiKeys') }}
@@ -30,11 +28,8 @@
           </div>
 
           <!-- Service Accounts -->
-          <div class="card p-4">
+          <div class="admin-metric">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
-                <Icon name="server" size="md" class="text-purple-600 dark:text-purple-400" :stroke-width="2" />
-              </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {{ t('admin.dashboard.accounts') }}
@@ -55,11 +50,8 @@
           </div>
 
           <!-- Today Requests -->
-          <div class="card p-4">
+          <div class="admin-metric">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-green-100 p-2 dark:bg-green-900/30">
-                <Icon name="chart" size="md" class="text-green-600 dark:text-green-400" :stroke-width="2" />
-              </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {{ t('admin.dashboard.todayRequests') }}
@@ -75,11 +67,8 @@
           </div>
 
           <!-- New Users Today -->
-          <div class="card p-4">
+          <div class="admin-metric">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                <Icon name="userPlus" size="md" class="text-emerald-600 dark:text-emerald-400" :stroke-width="2" />
-              </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {{ t('admin.dashboard.users') }}
@@ -96,13 +85,10 @@
         </div>
 
         <!-- Row 2: Token Stats -->
-        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="admin-metrics-grid">
           <!-- Today Tokens -->
-          <div class="card p-4">
+          <div class="admin-metric">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-amber-100 p-2 dark:bg-amber-900/30">
-                <Icon name="cube" size="md" class="text-amber-600 dark:text-amber-400" :stroke-width="2" />
-              </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {{ t('admin.dashboard.todayTokens') }}
@@ -134,11 +120,8 @@
           </div>
 
           <!-- Total Tokens -->
-          <div class="card p-4">
+          <div class="admin-metric">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-indigo-100 p-2 dark:bg-indigo-900/30">
-                <Icon name="database" size="md" class="text-indigo-600 dark:text-indigo-400" :stroke-width="2" />
-              </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {{ t('admin.dashboard.totalTokens') }}
@@ -170,11 +153,8 @@
           </div>
 
           <!-- Performance (RPM/TPM) -->
-          <div class="card p-4">
+          <div class="admin-metric">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-violet-100 p-2 dark:bg-violet-900/30">
-                <Icon name="bolt" size="md" class="text-violet-600 dark:text-violet-400" :stroke-width="2" />
-              </div>
               <div class="flex-1">
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {{ t('admin.dashboard.performance') }}
@@ -196,11 +176,8 @@
           </div>
 
           <!-- Avg Response Time -->
-          <div class="card p-4">
+          <div class="admin-metric">
             <div class="flex items-center gap-3">
-              <div class="rounded-lg bg-rose-100 p-2 dark:bg-rose-900/30">
-                <Icon name="clock" size="md" class="text-rose-600 dark:text-rose-400" :stroke-width="2" />
-              </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {{ t('admin.dashboard.avgResponse') }}
@@ -216,6 +193,8 @@
           </div>
         </div>
 
+        </div>
+
         <!-- Quick Actions -->
         <div class="card p-4">
           <div class="mb-3 flex items-center justify-between">
@@ -223,7 +202,12 @@
               {{ t('admin.dashboard.quickActions') }}
             </h2>
           </div>
-          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2" :class="{ 'xl:grid-cols-3': canUseBatchImage }">
+            <button type="button" class="group flex items-center gap-3 rounded-lg bg-gray-50 p-3 text-left transition-colors hover:bg-blue-50 dark:bg-dark-800/50 dark:hover:bg-blue-900/20" @click="router.push('/admin/accounts')">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"><Icon name="server" size="md" /></span>
+              <span class="min-w-0 flex-1"><span class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('admin.accounts.title') }}</span><span class="block text-xs text-gray-500 dark:text-gray-400">{{ t('workspace.accountSetupHint') }}</span></span>
+              <Icon name="chevronRight" size="sm" class="text-gray-400" />
+            </button>
             <button
               v-if="canUseBatchImage"
               type="button"

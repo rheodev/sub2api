@@ -65,7 +65,16 @@ async function capture(page: Page, name: string, project: string) {
 test('homepage, theme and login navigation', async ({ page }, info) => {
   await prepare(page)
   await page.goto('/home')
-  await expect(page.locator('.landing-protocol')).toBeVisible()
+  await expect(page.locator('.welcome-studio')).toBeVisible()
+  await expect(page.locator('h1')).toContainText('找到适合你的 AI')
+  await expect(page.locator('body')).not.toContainText('Subscription to API')
+  await expect(page.locator('pre')).toHaveCount(0)
+  await page.getByRole('tab', { name: '编程辅助', exact: true }).click()
+  await expect(page.getByRole('tabpanel')).toContainText('复杂的问题')
+  await page.getByRole('tab', { name: '编程辅助', exact: true }).press('End')
+  await expect(page.getByRole('tab', { name: '学习研究', exact: true })).toBeFocused()
+  await expect(page.getByRole('tabpanel')).toContainText('好奇心')
+  await page.getByRole('tab', { name: '内容创作', exact: true }).click()
   await capture(page, 'home', info.project.name)
   await page.getByRole('button', { name: '切换到深色模式' }).click()
   await expect(page.locator('html')).toHaveClass(/dark/)
@@ -121,6 +130,15 @@ test('administrator settings sections and account management', async ({ page }, 
   await page.goto('/admin/accounts')
   await expect(page.locator('.workspace-heading h1')).toBeVisible()
   await capture(page, 'accounts-dark', info.project.name)
+  // Lazy account creation must initialize on its first mount and reopen cleanly.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await page.getByRole('button', { name: '添加账号', exact: true }).first().click()
+    const dialog = page.getByRole('dialog', { name: '添加账号', exact: true })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'OpenAI', exact: true })).toBeVisible()
+    await dialog.getByRole('button', { name: 'Close modal', exact: true }).click()
+    await expect(dialog).toHaveCount(0)
+  }
   expect(errors).toEqual([])
 })
 
@@ -156,4 +174,47 @@ test('populated records, keyboard sorting and mobile sorting', async ({ page }, 
   await expect(page.getByText(sampleAccounts[0].name, { exact: true })).toBeVisible()
   await capture(page, 'accounts-populated', info.project.name)
   expect(errors).toEqual([])
+})
+
+test('settings drafts survive tab changes and cancelled navigation', async ({ page }, info) => {
+  await prepare(page, 'admin')
+  await page.goto('/admin/settings')
+  const name = page.getByRole('textbox', { name: '站点名称', exact: true })
+  await expect(name).toHaveValue('Sub2API')
+  await name.fill('Unsaved workspace')
+  await page.locator('#settings-tab-security').click()
+  await expect(page.getByRole('switch', { name: '开放注册', exact: true })).toBeVisible()
+  await page.locator('#settings-tab-general').click()
+  await expect(name).toHaveValue('Unsaved workspace')
+  async function navigate() {
+    if (info.project.name === 'mobile') await page.locator('header button.lg\\:hidden').first().click()
+    await page.locator('aside a[href="/admin/accounts"]').click()
+  }
+  await navigate()
+  if (info.project.name === 'mobile') {
+    await expect(page.locator('aside')).toHaveAttribute('inert', '')
+    await expect.poll(() => page.evaluate(() => !!document.activeElement?.closest('[role=dialog]'))).toBe(true)
+  }
+  await page.getByRole('button', { name: '继续编辑', exact: true }).click()
+  await expect(page).toHaveURL(/\/admin\/settings/)
+  await expect(name).toHaveValue('Unsaved workspace')
+  await navigate()
+  await page.getByRole('button', { name: '放弃更改并离开', exact: true }).click()
+  await expect(page).toHaveURL(/\/admin\/accounts/)
+})
+
+test('mobile navigation traps focus and restores the trigger', async ({ page }, info) => {
+  test.skip(info.project.name !== 'mobile')
+  await prepare(page, 'admin')
+  await page.goto('/keys')
+  const trigger = page.locator('header button.lg\\:hidden').first()
+  await trigger.click()
+  await expect(page.locator('aside')).toHaveAttribute('aria-modal', 'true')
+  const last = page.locator('aside button[aria-label="关闭"]')
+  await last.focus()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('aside a').first()).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(trigger).toBeFocused()
+  await expect(page.locator('aside')).toHaveAttribute('inert', '')
 })

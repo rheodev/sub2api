@@ -1,5 +1,6 @@
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { listPlatformIds } from "@/constants/platformCatalog";
+import { useUnsavedChanges } from "@/composables/useUnsavedChanges";
 import { useI18n } from "vue-i18n";
 import { adminAPI } from "@/api";
 import {
@@ -288,6 +289,7 @@ const paymentMethodsHref = computed(() =>
 );
 
 const activeTab = ref<SettingsTab>("general");
+const visitedSettingsTabs = ref(new Set<SettingsTab>(["general"]));
 
 const settingsTabs = [
   { key: "general" as SettingsTab, icon: "home" as const },
@@ -311,6 +313,7 @@ const settingsTabKeyboardActions = {
 } as const;
 
 function selectSettingsTab(tab: SettingsTab): void {
+  visitedSettingsTabs.value.add(tab);
   activeTab.value = tab;
 }
 
@@ -3013,6 +3016,7 @@ async function saveSettings() {
     await appStore.fetchPublicSettings(true);
     await adminSettingsStore.fetch(true);
     if (wsOk) {
+      await draftGuard.markSaved();
       appStore.showSuccess(t("admin.settings.settingsSaved"));
     }
   } catch (error: unknown) {
@@ -3992,6 +3996,17 @@ async function handleDeleteProvider() {
   }
 }
 
+const draftGuard = useUnsavedChanges(() => ({
+  form,
+  authSourceDefaults,
+  openaiFastPolicyForm,
+  webSearchConfig,
+  tablePageSizeOptionsInput: tablePageSizeOptionsInput.value,
+  registrationEmailSuffixWhitelistTags: registrationEmailSuffixWhitelistTags.value,
+  registrationEmailSuffixWhitelistDraft: registrationEmailSuffixWhitelistDraft.value,
+  forwardedClientIpHeaderDraft: forwardedClientIpHeaderDraft.value,
+}), computed(() => !loading.value && !loadFailed.value));
+
 onMounted(() => {
   loadSettings();
   loadSubscriptionGroups();
@@ -4314,6 +4329,10 @@ watch(
 );
 
 return {
+draftGuard,
+settingsDirty: draftGuard.dirty,
+showLeaveDialog: draftGuard.showLeaveDialog,
+confirmLeave: draftGuard.confirmLeave,
 t,
 locale,
 appStore,
@@ -4324,6 +4343,7 @@ localText,
 paymentGuideHref,
 paymentMethodsHref,
 activeTab,
+visitedSettingsTabs,
 settingsTabs,
 settingsTabKeyboardActions,
 selectSettingsTab,

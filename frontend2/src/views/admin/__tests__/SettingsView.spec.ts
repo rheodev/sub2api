@@ -576,6 +576,7 @@ async function openPaymentTab(wrapper: ReturnType<typeof mountView>) {
 
   expect(paymentTabButton).toBeDefined();
   await paymentTabButton?.trigger("click");
+  await vi.dynamicImportSettled();
   await flushPromises();
 }
 
@@ -586,6 +587,7 @@ async function openSecurityTab(wrapper: ReturnType<typeof mountView>) {
 
   expect(securityTabButton).toBeDefined();
   await securityTabButton?.trigger("click");
+  await vi.dynamicImportSettled();
   await flushPromises();
 }
 
@@ -596,6 +598,7 @@ async function openGatewayTab(wrapper: ReturnType<typeof mountView>) {
 
   expect(gatewayTabButton).toBeDefined();
   await gatewayTabButton?.trigger("click");
+  await vi.dynamicImportSettled();
   await flushPromises();
 }
 
@@ -606,6 +609,7 @@ async function openUsersTab(wrapper: ReturnType<typeof mountView>) {
 
   expect(usersTabButton).toBeDefined();
   await usersTabButton?.trigger("click");
+  await vi.dynamicImportSettled();
   await flushPromises();
 }
 
@@ -766,6 +770,32 @@ describe("admin SettingsView payment visible method controls", () => {
     );
   });
 
+  it("clears the draft warning after a successful settings save", async () => {
+    const wrapper = mountView();
+    await flushPromises();
+    const field = wrapper.get('input[aria-label="admin.settings.site.siteName"]');
+    await field.setValue("Updated workspace");
+    expect(wrapper.get('[role="status"]').text()).toBe("workspace.unsavedChanges");
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+    expect(updateSettings).toHaveBeenCalled();
+    expect(wrapper.get('[role="status"]').text()).toBe("workspace.settingsUpToDate");
+    wrapper.unmount();
+  });
+
+  it("keeps the draft warning after a failed settings save", async () => {
+    const wrapper = mountView();
+    await flushPromises();
+    updateSettings.mockRejectedValueOnce(new Error("save failed"));
+    const field = wrapper.get('input[aria-label="admin.settings.site.siteName"]');
+    await field.setValue("Unsaved workspace");
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+    expect(field.element).toHaveProperty("value", "Unsaved workspace");
+    expect(wrapper.get('[role="status"]').text()).toBe("workspace.unsavedChanges");
+    wrapper.unmount();
+  });
+
   it("renders panel rate limit card and saves settings", async () => {
     getPanelRateLimitSettings.mockClear();
     updatePanelRateLimitSettings.mockClear();
@@ -780,6 +810,7 @@ describe("admin SettingsView payment visible method controls", () => {
 
     const wrapper = mountView();
     await flushPromises();
+    await openSecurityTab(wrapper);
 
     expect(getPanelRateLimitSettings).toHaveBeenCalled();
     expect(wrapper.text()).toContain("admin.settings.panelRateLimit.title");
@@ -1383,6 +1414,7 @@ describe("admin SettingsView payment visible method controls", () => {
     const wrapper = mountView();
 
     await flushPromises();
+    await openGatewayTab(wrapper);
 
     expect(wrapper.text()).toContain("OpenAI 实验调度策略");
     expect(wrapper.text()).toContain(
@@ -1545,6 +1577,7 @@ describe("admin SettingsView payment visible method controls", () => {
     });
     const wrapper = mountView();
     await flushPromises();
+    await openGatewayTab(wrapper);
     const input = wrapper.get('[data-testid="openai-oauth-scheduling-rate-multiplier"]');
     expect(input.attributes("required")).toBeUndefined();
     await input.setValue("");
@@ -1575,6 +1608,7 @@ describe("admin SettingsView payment visible method controls", () => {
     });
     const wrapper = mountView();
     await flushPromises();
+    await openGatewayTab(wrapper);
     const input = wrapper.get<HTMLInputElement>('[data-testid="openai-oauth-scheduling-rate-multiplier"]');
     expect(input.element.value).toBe("");
     await wrapper.find("form").trigger("submit.prevent");
@@ -1588,6 +1622,7 @@ describe("admin SettingsView payment visible method controls", () => {
     const wrapper = mountView();
 
     await flushPromises();
+    await openGatewayTab(wrapper);
     expect(
       wrapper.find('[data-testid="openai-oauth-scheduling-rate-multiplier"]').exists(),
     ).toBe(false);

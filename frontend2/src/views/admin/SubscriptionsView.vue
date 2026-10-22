@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <AppLayout table-page>
     <TablePageLayout>
       <template #filters>
         <!-- Top Toolbar: Left (search + filters) / Right (actions) -->

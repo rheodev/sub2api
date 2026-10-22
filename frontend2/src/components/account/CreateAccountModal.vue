@@ -5103,7 +5103,8 @@ watch(
     } else {
       resetForm()
     }
-  }
+  },
+  { immediate: props.show }
 )
 
 // Sync form.type based on accountCategory, addMethod, and platform-specific type

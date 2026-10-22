@@ -10,18 +10,19 @@
       </div>
       <form v-else @submit.prevent="saveSettings" class="settings-workspace" novalidate>
         <SettingsNavigation />
-<div class="settings-content">
-        <SettingsSecuritySection />
-        <SettingsGatewaySection />
-        <SettingsUsersSection />
+<fieldset :disabled="saving" class="settings-content min-w-0">
+        <SettingsSecuritySection v-if="visitedSettingsTabs.has('security')" />
+        <SettingsGatewaySection v-if="visitedSettingsTabs.has('gateway')" />
+        <SettingsUsersSection v-if="visitedSettingsTabs.has('users')" />
         <SettingsGeneralSection />
-	        <SettingsAgreementSection />
-        <SettingsFeaturesSection />
-        <SettingsPaymentSection />
+	        <SettingsAgreementSection v-if="visitedSettingsTabs.has('agreement')" />
+        <SettingsFeaturesSection v-if="visitedSettingsTabs.has('features')" />
+        <SettingsPaymentSection v-if="visitedSettingsTabs.has('payment')" />
 
-        <SettingsEmailSection />
-        <SettingsBackupSection />
-        <div v-show="activeTab !== 'backup'" class="flex justify-end">
+        <SettingsEmailSection v-if="visitedSettingsTabs.has('email')" />
+        <SettingsBackupSection v-if="visitedSettingsTabs.has('backup')" />
+        <div v-show="activeTab !== 'backup'" class="settings-save-bar">
+          <p role="status" class="text-sm text-gray-500 dark:text-gray-400">{{ settingsDirty ? t('workspace.unsavedChanges') : t('workspace.settingsUpToDate') }}</p>
           <button
             type="submit"
             :disabled="saving || loadFailed"
@@ -54,8 +55,18 @@
             }}
           </button>
         </div>
-      </div>
+      </fieldset>
 </form>
+      <ConfirmDialog
+        :show="showLeaveDialog"
+        :title="t('workspace.unsavedChanges')"
+        :message="t('workspace.leaveSettingsMessage')"
+        :confirm-text="t('workspace.discardChanges')"
+        :cancel-text="t('workspace.keepEditing')"
+        danger
+        @confirm="confirmLeave(true)"
+        @cancel="confirmLeave(false)"
+      />
       <PaymentProviderDialog
         ref="providerDialogRef"
         :show="showProviderDialog"
@@ -93,18 +104,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, provide } from 'vue'
+import { defineAsyncComponent, defineComponent, provide } from 'vue'
 import { useSystemSettings, systemSettingsComponents } from './useSystemSettings'
 import { systemSettingsKey } from './settings/context'
-import SettingsSecuritySection from './settings/sections/SettingsSecuritySection.vue'
-import SettingsGatewaySection from './settings/sections/SettingsGatewaySection.vue'
-import SettingsUsersSection from './settings/sections/SettingsUsersSection.vue'
+const SettingsSecuritySection = defineAsyncComponent(() => import('./settings/sections/SettingsSecuritySection.vue'))
+const SettingsGatewaySection = defineAsyncComponent(() => import('./settings/sections/SettingsGatewaySection.vue'))
+const SettingsUsersSection = defineAsyncComponent(() => import('./settings/sections/SettingsUsersSection.vue'))
 import SettingsGeneralSection from './settings/sections/SettingsGeneralSection.vue'
-import SettingsAgreementSection from './settings/sections/SettingsAgreementSection.vue'
-import SettingsFeaturesSection from './settings/sections/SettingsFeaturesSection.vue'
-import SettingsPaymentSection from './settings/sections/SettingsPaymentSection.vue'
-import SettingsEmailSection from './settings/sections/SettingsEmailSection.vue'
-import SettingsBackupSection from './settings/sections/SettingsBackupSection.vue'
+const SettingsAgreementSection = defineAsyncComponent(() => import('./settings/sections/SettingsAgreementSection.vue'))
+const SettingsFeaturesSection = defineAsyncComponent(() => import('./settings/sections/SettingsFeaturesSection.vue'))
+const SettingsPaymentSection = defineAsyncComponent(() => import('./settings/sections/SettingsPaymentSection.vue'))
+const SettingsEmailSection = defineAsyncComponent(() => import('./settings/sections/SettingsEmailSection.vue'))
+const SettingsBackupSection = defineAsyncComponent(() => import('./settings/sections/SettingsBackupSection.vue'))
 import SettingsNavigation from './settings/sections/SettingsNavigation.vue'
 
 export default defineComponent({
