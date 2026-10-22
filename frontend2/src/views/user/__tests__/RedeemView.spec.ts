@@ -238,4 +238,47 @@ describe('RedeemView refresh after redemption', () => {
     expect(showWarning).not.toHaveBeenCalled()
     wrapper.unmount()
   })
+
+  it('shows normalized API errors beside the input and clears them when editing', async () => {
+    redeem.mockRejectedValue({ status: 400, message: 'This code has already been used' })
+    const wrapper = await submitCode()
+    expect(wrapper.get('#redeem-error').text()).toContain('This code has already been used')
+    expect(wrapper.get('#code').attributes('aria-invalid')).toBe('true')
+    expect(wrapper.get('#code').attributes('aria-describedby')).toContain('redeem-error')
+    await wrapper.get('#code').setValue('A-DIFFERENT-CODE')
+    expect(wrapper.find('#redeem-error').exists()).toBe(false)
+    expect(wrapper.get('#code').attributes('aria-invalid')).toBe('false')
+    await wrapper.get('#code').setValue('   ')
+    expect(wrapper.get('button[type="submit"]').attributes('disabled')).toBeDefined()
+    wrapper.unmount()
+  })
+
+  it('retries history failure without showing a misleading empty state', async () => {
+    getHistory.mockRejectedValueOnce(new Error('Network error'))
+    const wrapper = mount(RedeemView, {
+      global: { stubs: { AppLayout: { template: '<div><slot /></div>' }, Icon: true } },
+    })
+    await flushPromises()
+    expect(wrapper.get('[role="alert"]').text()).toContain('redeem.historyLoadFailed')
+    expect(wrapper.text()).not.toContain('redeem.historyWillAppear')
+    await wrapper.findAll('button').find(button => button.text() === 'common.tryAgain')!.trigger('click')
+    await flushPromises()
+    expect(getHistory).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('redeem.historyWillAppear')
+    wrapper.unmount()
+  })
+
+  it('prevents duplicate submissions while redemption is pending', async () => {
+    let resolveRedeem!: (result: unknown) => void
+    redeem.mockImplementationOnce(() => new Promise(resolve => { resolveRedeem = resolve }))
+    const wrapper = await submitCode()
+    await wrapper.get('form').trigger('submit')
+    expect(redeem).toHaveBeenCalledOnce()
+    expect(wrapper.get('#code').attributes('disabled')).toBeDefined()
+    resolveRedeem({ type: 'balance', value: 20, message: 'Code applied' })
+    await flushPromises()
+    expect(wrapper.get('[role="status"]').text()).toContain('Code applied')
+    wrapper.unmount()
+  })
 })

@@ -271,6 +271,108 @@ test('profile sections preserve drafts and adapt to theme and viewport', async (
   expect(errors).toEqual([])
 })
 
+test('redemption feedback, history retry and paging work across viewports', async ({ page }, info) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await prepare(page, 'user')
+  let english = false
+  await page.route('**/redeem', async route => {
+    if (route.request().resourceType() !== 'document') return route.fallback()
+    const response = await route.fetch()
+    let body = (await response.text()).replace(/<script>window\.__APP_CONFIG__=.*?;<\/script>/s, '')
+    if (english) body = body.replace('</head>', '<script>localStorage.setItem("sub2api_locale", "en")</script></head>')
+    await route.fulfill({ response, body })
+  })
+  const currentUser = { ...user }
+  await page.route('**/api/v1/auth/me*', route => route.fulfill({ json: { code: 0, data: currentUser } }))
+  let failHistory = true
+  let history = Array.from({ length: 21 }, (_, index) => ({
+    id: index + 1, code: `PREVIEW-CODE-${index}`, type: ['balance', 'admin_balance', 'subscription'][index % 3],
+    value: index % 3 === 1 ? -5 : 30, used_at: timestamp, validity_days: 30,
+    group: { id: 1, name: '团队订阅 / Team subscription with a long group name' },
+    notes: index === 1 ? '管理员调整余额 / Account balance adjustment' : '',
+  }))
+  const receivedCodes: string[] = []
+  await page.route(/\/api\/v1\/redeem(?:\/history)?(?:\?|$)/, async route => {
+    const url = new URL(route.request().url())
+    if (url.pathname.endsWith('/history')) {
+      if (failHistory) {
+        failHistory = false
+        return route.fulfill({ status: 503, json: { code: 503, message: 'History unavailable' } })
+      }
+      const pageNumber = Number(url.searchParams.get('page') || 1)
+      const size = Number(url.searchParams.get('page_size') || 20)
+      return route.fulfill({ json: { code: 0, data: {
+        items: history.slice((pageNumber - 1) * size, pageNumber * size), total: history.length,
+        page: pageNumber, page_size: size, pages: Math.ceil(history.length / size),
+      } } })
+    }
+    const code = route.request().postDataJSON().code as string
+    receivedCodes.push(code)
+    if (code === 'INVALID') return route.fulfill({ status: 400, json: { code: 400, message: '兑换码已使用，请检查后重试。' } })
+    const type = code.toLowerCase()
+    if (type === 'balance') currentUser.balance += 20
+    if (type === 'concurrency') currentUser.concurrency += 2
+    history.unshift({
+      id: 100 + receivedCodes.length, code, type, value: type === 'concurrency' ? 2 : 20,
+      used_at: timestamp, validity_days: 30, group: { id: 1, name: '团队订阅' }, notes: '',
+    })
+    return route.fulfill({ json: { code: 0, data: {
+      type, value: type === 'concurrency' ? 2 : 20, message: '兑换已到账',
+      new_balance: currentUser.balance, new_concurrency: currentUser.concurrency,
+      group_name: '团队订阅', validity_days: 30,
+    } } })
+  })
+  await page.goto('/redeem')
+  const input = page.getByRole('textbox', { name: '兑换码', exact: true })
+  const submit = page.getByRole('button', { name: '兑换', exact: true })
+  await expect(submit).toBeDisabled()
+  await input.fill('   ')
+  await expect(submit).toBeDisabled()
+  await expect(page.locator('.redeem-history [role="alert"]')).toBeVisible()
+  await page.getByRole('button', { name: '请重试', exact: true }).click()
+  await expect(page.locator('.redeem-history-row')).toHaveCount(20)
+  await page.getByRole('button', { name: '下一页', exact: true }).click()
+  await expect(page.locator('.redeem-history-row')).toHaveCount(1)
+  await page.getByRole('button', { name: '上一页', exact: true }).click()
+  await page.locator('.redeem-page-size select').selectOption('50')
+  await expect(page.locator('.redeem-history-row')).toHaveCount(21)
+  history = history.slice(0, 3)
+  await page.reload()
+  await expect(page.locator('.redeem-history-row')).toHaveCount(3)
+  await input.fill('INVALID')
+  await submit.click()
+  await expect(page.locator('#redeem-error')).toContainText('兑换码已使用')
+  await expect(input).toHaveAttribute('aria-invalid', 'true')
+  await page.getByRole('button', { name: 'Close notification', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Close notification', exact: true })).toHaveCount(0)
+  await capture(page, 'redeem-error', info.project.name)
+  for (const code of ['BALANCE', 'CONCURRENCY', 'SUBSCRIPTION']) {
+    await input.fill(` ${code} `)
+    await submit.click()
+    await expect(page.locator('.redeem-feedback-success')).toContainText('兑换已到账')
+    await expect(input).toHaveValue('')
+    await expect(page.locator('.redeem-feedback-success')).toContainText(code === 'BALANCE' ? '$62.50' : code === 'CONCURRENCY' ? '7' : '团队订阅')
+    await page.getByRole('button', { name: 'Close notification', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Close notification', exact: true })).toHaveCount(0)
+  }
+  expect(receivedCodes).toEqual(['INVALID', 'BALANCE', 'CONCURRENCY', 'SUBSCRIPTION'])
+  await expect(page.locator('.redeem-history-row')).toHaveCount(6)
+  await capture(page, 'redeem-success', info.project.name)
+  await page.evaluate(() => document.documentElement.classList.add('dark'))
+  await capture(page, 'redeem-success-dark', info.project.name)
+  english = true
+  await page.setViewportSize({ width: info.project.name === 'mobile' ? 320 : 900, height: 1000 })
+  await page.reload()
+  await expect(page.getByRole('textbox', { name: 'Redeem Code', exact: true })).toBeVisible()
+  await capture(page, 'redeem-english-narrow', info.project.name)
+  history = []
+  await page.reload()
+  await expect(page.locator('.redeem-empty')).toContainText('Your redemption history will appear here')
+  await capture(page, 'redeem-empty', info.project.name)
+  expect(errors).toEqual([])
+})
+
 test('settings drafts survive tab changes and cancelled navigation', async ({ page }, info) => {
   await prepare(page, 'admin')
   await page.goto('/admin/settings')
