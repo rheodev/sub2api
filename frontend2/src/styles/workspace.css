@@ -129,9 +129,11 @@ body.navigation-open { overflow: hidden; }
 .table-wrapper thead, .table th { background: var(--ws-canvas); }
 .table-wrapper th, .table th { text-transform: none; letter-spacing: normal; color: var(--ws-muted); }
 .table-wrapper td, .table td { border-color: var(--ws-border); }
-[data-table-density='compact'] .table-wrapper td,
-[data-table-density='compact'] .table td { padding-top: 7px; padding-bottom: 7px; }
-[data-table-density='compact'] .table-wrapper th { padding-top: 9px; padding-bottom: 9px; }
+/* Outrank TablePageLayout's scoped cell padding regardless of load order. */
+html[data-table-density='compact'] .table-wrapper td,
+html[data-table-density='compact'] .table td { padding-top: 7px; padding-bottom: 7px; }
+html[data-table-density='compact'] .table-wrapper th,
+html[data-table-density='compact'] .table th { padding-top: 9px; padding-bottom: 9px; }
 .badge { border-radius: 4px; font-size: 11px; }
 .dropdown { border-radius: 8px; border-color: var(--ws-border); background: var(--ws-surface); box-shadow: 0 8px 24px rgb(15 23 42 / 0.12); }
 .dropdown-item { font-size: 13px; }

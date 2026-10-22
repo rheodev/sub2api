@@ -85,6 +85,41 @@ test('homepage, theme and login navigation', async ({ page }, info) => {
   await capture(page, 'login', info.project.name)
 })
 
+test('table density changes rendered spacing and persists after reload', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'Mobile uses record cards instead of table cells')
+  await prepare(page, 'user', false, true)
+  await page.goto('/keys')
+  const header = page.locator('.table-wrapper th').first()
+  const cell = page.locator('.table-wrapper tbody td').first()
+  const row = page.locator('.table-wrapper tbody tr').first()
+  const button = page.locator('.workspace-density')
+
+  await expect(cell).toHaveCSS('padding-top', '16px')
+  await expect(header).toHaveCSS('padding-top', '16px')
+  const standardHeight = (await row.boundingBox())!.height
+  await button.click()
+  await expect(button).toHaveAttribute('aria-pressed', 'true')
+  await expect(cell).toHaveCSS('padding-top', '7px')
+  await expect(cell).toHaveCSS('padding-bottom', '7px')
+  await expect(header).toHaveCSS('padding-top', '9px')
+  await expect(header).toHaveCSS('padding-bottom', '9px')
+  expect((await row.boundingBox())!.height).toBeLessThan(standardHeight)
+
+  await page.reload()
+  await expect(button).toHaveAttribute('aria-pressed', 'true')
+  await expect(cell).toHaveCSS('padding-top', '7px')
+  await expect(header).toHaveCSS('padding-top', '9px')
+  await capture(page, 'keys-density-compact', info.project.name)
+
+  await button.click()
+  await expect(button).toHaveAttribute('aria-pressed', 'false')
+  await expect(cell).toHaveCSS('padding-top', '16px')
+  await expect(cell).toHaveCSS('padding-bottom', '16px')
+  await expect(header).toHaveCSS('padding-top', '16px')
+  await expect(header).toHaveCSS('padding-bottom', '16px')
+  await capture(page, 'keys-density-standard', info.project.name)
+})
+
 test('user dashboard, density persistence and API-key dialog', async ({ page }, info) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
