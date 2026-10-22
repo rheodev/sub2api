@@ -113,9 +113,13 @@ FROM ${POSTGRES_IMAGE} AS pg-client
 FROM ${ALPINE_IMAGE}
 
 # Labels
-LABEL maintainer="Wei-Shaw <github.com/Wei-Shaw>"
-LABEL description="Sub2API - AI API Gateway Platform"
-LABEL org.opencontainers.image.source="https://github.com/Wei-Shaw/sub2api"
+LABEL maintainer="rheodev <https://github.com/rheodev>"
+LABEL description="AI Space - AI services and team management"
+LABEL org.opencontainers.image.authors="rheodev"
+LABEL org.opencontainers.image.title="AI Space"
+LABEL org.opencontainers.image.description="AI Space - AI services and team management"
+LABEL org.opencontainers.image.source="https://github.com/rheodev/sub2api"
+LABEL org.opencontainers.image.url="https://github.com/rheodev/sub2api"
 
 # Install runtime dependencies
 RUN apk add --no-cache \
