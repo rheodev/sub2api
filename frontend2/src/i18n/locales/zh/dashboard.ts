@@ -336,6 +336,12 @@ export default {
 
   // Usage
   usage: {
+    summary: '用量概览',
+    showAnalysis: '展开用量分析',
+    hideAnalysis: '收起用量分析',
+    moreFilters: '更多筛选',
+    recordCount: '共 {count} 条',
+    analysisFailed: '部分用量统计加载失败，请重试。',
     title: '使用记录',
     description: '查看和分析您的 API 使用历史',
     costDetails: '费用明细',

@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4" :class="{ 'usage-stats-compact': compact }">
     <div class="card p-4 flex items-center gap-3">
       <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30 text-blue-600">
         <Icon name="document" size="md" />
@@ -99,9 +99,11 @@ const props = withDefaults(defineProps<{
   stats: (AdminUsageStatsResponse | UsageStatsResponse) | null
   showAccountCost?: boolean
   strikeStandardCost?: boolean
+  compact?: boolean
 }>(), {
   showAccountCost: true,
   strikeStandardCost: false,
+  compact: false,
 })
 
 const { t } = useI18n()
@@ -126,3 +128,35 @@ const formatTokens = (value: number) => {
 const cacheLabel = () => t('usage.cacheTotal')
 const cacheDetailLabel = () => t('usage.cacheBreakdown')
 </script>
+
+<style scoped>
+.usage-stats-compact {
+  gap: 0;
+  border: 1px solid var(--ws-border);
+  border-radius: 10px;
+  background: var(--ws-surface);
+  box-shadow: var(--ws-shadow);
+}
+.usage-stats-compact > .card {
+  align-items: flex-start;
+  min-width: 0;
+  padding: 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.usage-stats-compact > .card + .card { border-left: 1px solid var(--ws-border); }
+.usage-stats-compact > .card > :first-child { display: none; }
+.usage-stats-compact > .card > :last-child { min-width: 0; }
+.usage-stats-compact p { color: var(--ws-muted); }
+.usage-stats-compact .text-xl { margin: 4px 0; color: var(--ws-text); font-size: 24px; font-weight: 600; overflow-wrap: anywhere; }
+@media (max-width: 1023px) {
+  .usage-stats-compact > .card { padding: 16px; }
+  .usage-stats-compact > .card:nth-child(3) { border-left: 0; }
+  .usage-stats-compact > .card:nth-child(n + 3) { border-top: 1px solid var(--ws-border); }
+}
+@media (max-width: 479px) {
+  .usage-stats-compact .text-xl { font-size: 20px; }
+}
+</style>

@@ -63,6 +63,96 @@ async function capture(page: Page, name: string, project: string) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)
 }
 
+test('user usage filters, recovery, analysis and keyboard tabs', async ({ page }, info) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await prepare(page, 'user', false, true, { allow_user_view_error_requests: true })
+  const usageRow = {
+    id: 1, user_id: 91, api_key_id: 1, request_id: 'preview-usage',
+    api_key: { name: sampleKeys[0].name }, group: { name: '日常工作 / Everyday workspace', platform: 'openai' },
+    model: 'gpt-5.4', reasoning_effort: 'high', request_type: 'stream', stream: true,
+    input_tokens: 1200, output_tokens: 340, cache_creation_tokens: 0, cache_read_tokens: 480,
+    input_cost: 0.02, output_cost: 0.01, cache_creation_cost: 0, cache_read_cost: 0.001,
+    total_cost: 0.031, actual_cost: 0.0155, rate_multiplier: 0.5,
+    image_count: 0, billing_type: 0, billing_mode: 'token', first_token_ms: 250,
+    duration_ms: 1420, inbound_endpoint: '/v1/responses', created_at: timestamp,
+  }
+  let failLogs = true
+  let failErrors = true
+  let empty = false
+  await page.route(/\/api\/v1\/usage(?:\?|$)/, route => {
+    if (failLogs) return route.fulfill({ status: 503, json: { message: 'Preview unavailable' } })
+    return route.fulfill({ json: { code: 0, data: { items: empty ? [] : [usageRow], total: empty ? 0 : 1, page: 1, page_size: 20, pages: empty ? 0 : 1 } } })
+  })
+  await page.route('**/api/v1/usage/stats?*', route => route.fulfill({ json: { code: 0, data: {
+    total_requests: 128, total_tokens: 256000, total_input_tokens: 180000, total_output_tokens: 26000,
+    total_cache_tokens: 50000, total_actual_cost: 4.5, total_cost: 9, average_duration_ms: 1420, endpoints: [],
+  } } }))
+  await page.route('**/api/v1/usage/dashboard/models?*', route => route.fulfill({ json: { code: 0, data: { models: [{
+    model: 'gpt-5.4', requests: 128, total_tokens: 256000, actual_cost: 4.5, cost: 9,
+  }] } } }))
+  await page.route('**/api/v1/usage/errors?*', route => {
+    if (failErrors) return route.fulfill({ status: 503, json: { message: 'Preview unavailable' } })
+    return route.fulfill({ json: { code: 0, data: { items: [], total: 0, page: 1, page_size: 20, pages: 0 } } })
+  })
+  await page.goto('/usage')
+  await expect(page.locator('.usage-record-error')).toBeVisible()
+  failLogs = false
+  await page.locator('.usage-record-error button').click()
+  await expect(page.locator('.usage-record-error')).toHaveCount(0)
+  await expect(page.locator('.usage-detail').getByText('gpt-5.4', { exact: true })).toBeVisible()
+  await expect(page.locator('#usage-charts')).toBeHidden()
+  await capture(page, 'usage-records', info.project.name)
+
+  await page.getByRole('button', { name: '更多筛选', exact: true }).click()
+  await page.getByRole('button', { name: '计费类型', exact: true }).click()
+  await page.getByRole('option', { name: '钱包余额', exact: true }).click()
+  await expect(page.getByRole('button', { name: /更多筛选/ })).toContainText('1')
+  await page.getByRole('button', { name: /更多筛选/ }).click()
+  await expect(page.locator('#usage-advanced-filters')).toBeHidden()
+  await page.getByRole('button', { name: '重置', exact: true }).click()
+  await expect(page.locator('.usage-filter-count')).toHaveCount(0)
+  await page.getByTestId('usage-column-settings').click()
+  await page.getByTestId('usage-column-toggle-model').focus()
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('usage-column-settings')).toBeFocused()
+  await expect(page.locator('#usage-column-options')).toHaveCount(0)
+
+  await page.getByRole('button', { name: '展开用量分析', exact: true }).click()
+  await expect(page.locator('#usage-charts')).toBeVisible()
+  await expect(page.locator('#usage-charts canvas').first()).toBeVisible()
+  await expect.poll(async () => (await page.locator('#usage-charts canvas').first().boundingBox())?.width ?? 0).toBeGreaterThan(100)
+  // Canvas drawing animations continue independently of CSS screenshot settings.
+  await page.waitForTimeout(1100)
+  await capture(page, 'usage-analysis', info.project.name)
+  await page.getByRole('button', { name: '收起用量分析', exact: true }).click()
+  await page.getByRole('tab', { name: '用量明细', exact: true }).focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByRole('tab', { name: '错误请求', exact: true })).toBeFocused()
+  await expect(page.locator('.usage-record-error')).toBeVisible()
+  failErrors = false
+  await page.locator('.usage-record-error button').click()
+  await expect(page.locator('.usage-record-error')).toHaveCount(0)
+  await expect(page.locator('#usage-filter-category')).toBeVisible()
+  await capture(page, 'usage-errors', info.project.name)
+  await page.getByRole('tab', { name: '错误请求', exact: true }).press('Home')
+  await expect(page.getByRole('tab', { name: '用量明细', exact: true })).toBeFocused()
+
+  await page.evaluate(() => document.documentElement.classList.add('dark'))
+  await capture(page, 'usage-dark', info.project.name)
+  await page.setViewportSize({ width: info.project.name === 'mobile' ? 320 : 900, height: 1000 })
+  await page.addInitScript(() => localStorage.setItem('sub2api_locale', 'en'))
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Show usage analysis' })).toBeVisible()
+  await capture(page, 'usage-english-narrow', info.project.name)
+  empty = true
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click()
+  await expect(page.locator('.usage-record-count')).toContainText('Records: 0')
+  await expect(page.locator('.usage-record-error')).toHaveCount(0)
+  await capture(page, 'usage-empty', info.project.name)
+  expect(errors).toEqual([])
+})
+
 test('homepage, theme and login navigation', async ({ page }, info) => {
   await prepare(page)
   await page.goto('/home')

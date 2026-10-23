@@ -234,6 +234,63 @@ describe('user UsageView', () => {
     expect(getAvailable).toHaveBeenCalled()
   })
 
+  it('shows a recoverable failure instead of an empty usage table', async () => {
+    query.mockRejectedValueOnce(new Error('offline'))
+    const wrapper = mountUsageView()
+    await flushPromises()
+
+    expect(wrapper.find('.usage-record-error').text()).toContain('Failed to load')
+    expect(wrapper.findComponent(UsageTable).exists()).toBe(false)
+    await wrapper.find('.usage-record-error button').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('.usage-record-error').exists()).toBe(false)
+    expect(wrapper.findComponent(UsageTable).exists()).toBe(true)
+    expect(query).toHaveBeenCalledTimes(2)
+    wrapper.unmount()
+  })
+
+  it('ignores an older error request that finishes after the latest filter', async () => {
+    let resolveOlder!: (value: unknown) => void
+    listMyErrorRequests.mockReturnValueOnce(new Promise((resolve) => { resolveOlder = resolve }))
+    const wrapper = mountUsageView()
+    await flushPromises()
+    await wrapper.find('[role="tab"][id="usage-tab-errors"]').trigger('click')
+
+    const vm = wrapper.vm as any
+    vm.errorFilter.model = 'latest-model'
+    listMyErrorRequests.mockResolvedValueOnce({ items: [{ id: 2, model: 'latest-model' }], total: 1 })
+    vm.applyErrorFilters()
+    await flushPromises()
+    resolveOlder({ items: [{ id: 1, model: 'old-model' }], total: 9 })
+    await flushPromises()
+
+    expect(vm.errorRows).toEqual([{ id: 2, model: 'latest-model' }])
+    expect(vm.errorTotal).toBe(1)
+    expect(vm.errorLoading).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('resets error filters before making a single reload request', async () => {
+    const wrapper = mountUsageView()
+    await flushPromises()
+    await wrapper.find('#usage-tab-errors').trigger('click')
+    await flushPromises()
+    const vm = wrapper.vm as any
+    vm.errorFilter.model = 'old-model'
+    vm.errorFilter.status_code = 429
+    listMyErrorRequests.mockClear()
+
+    await wrapper.findAll('button').find((button) => button.text() === 'Reset')!.trigger('click')
+    await flushPromises()
+
+    expect(listMyErrorRequests).toHaveBeenCalledTimes(1)
+    expect(listMyErrorRequests).toHaveBeenCalledWith(expect.objectContaining({
+      page: 1, model: undefined, status_code: undefined,
+    }))
+    wrapper.unmount()
+  })
+
   it('includes API keys after the first page in both record filters and queries by the selected key', async () => {
     const firstPageKeys = Array.from({ length: 100 }, (_, index) => ({
       id: index + 1,

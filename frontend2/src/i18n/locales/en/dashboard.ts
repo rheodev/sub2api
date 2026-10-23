@@ -331,6 +331,12 @@ export default {
 
   // Usage
   usage: {
+    summary: 'Usage summary',
+    showAnalysis: 'Show usage analysis',
+    hideAnalysis: 'Hide usage analysis',
+    moreFilters: 'More filters',
+    recordCount: 'Records: {count}',
+    analysisFailed: 'Some usage statistics could not be loaded. Please try again.',
     title: 'Usage Records',
     description: 'View and analyze your API usage history',
     costDetails: 'Cost Breakdown',

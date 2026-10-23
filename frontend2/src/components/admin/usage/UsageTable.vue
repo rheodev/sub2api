@@ -45,7 +45,7 @@
         </template>
 
         <template #cell-api_key="{ row }">
-          <span class="text-sm text-gray-900 dark:text-white">{{ row.api_key?.name || '-' }}</span>
+          <span class="usage-api-key text-sm text-gray-900 dark:text-white" :title="row.api_key?.name">{{ row.api_key?.name || '-' }}</span>
         </template>
 
         <template #cell-account="{ row }">

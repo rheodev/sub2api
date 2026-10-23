@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <div class="card flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div :class="[flat ? '' : 'card', 'flex min-h-0 flex-1 flex-col overflow-hidden']">
       <IpGeoBatchToolbar :ips="rows.map((r) => r.client_ip)" @failed="emit('ipGeoBatchFailed')" />
 
       <DataTable
@@ -148,6 +148,7 @@ const props = defineProps<{
   pageSize: number
   /** 列设置:仅显示这些 key 的列;不传则全显(key 须与 allColumns 一致) */
   visibleColumnKeys?: string[]
+  flat?: boolean
 }>()
 
 const emit = defineEmits<{
