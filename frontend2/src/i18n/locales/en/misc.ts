@@ -89,6 +89,16 @@ export default {
 
   // Announcements Page
   announcements: {
+    tableContent: 'Announcement table, scroll horizontally',
+    bellUnread: 'Announcements, {count} unread',
+    listSummary: '{count} announcements, {unread} unread',
+    backToList: 'Back to announcements',
+    loadFailed: 'Unable to load announcements. Please try again.',
+    refreshFailed: 'Refresh failed. Showing previously loaded announcements.',
+    retry: 'Reload',
+    readFailed: 'Unable to mark this announcement as read. Please try again.',
+    markAllFailed: 'Some announcements could not be marked as read. Please retry. Successful changes have been kept.',
+    markingRead: 'Marking as read…',
     title: 'Announcements',
     description: 'View system announcements',
     unreadOnly: 'Show unread only',

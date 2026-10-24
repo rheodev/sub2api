@@ -9,6 +9,7 @@ export const useAnnouncementStore = defineStore('announcements', () => {
   // State
   const announcements = ref<UserAnnouncement[]>([])
   const loading = ref(false)
+  const loadError = ref(false)
   const lastFetchTime = ref(0)
   const popupQueue = ref<UserAnnouncement[]>([])
   const currentPopup = ref<UserAnnouncement | null>(null)
@@ -35,6 +36,7 @@ export const useAnnouncementStore = defineStore('announcements', () => {
 
     try {
       loading.value = true
+      loadError.value = false
       const all = await announcementsAPI.list(false)
       if (generation !== fetchGeneration) return
       announcements.value = all.slice(0, 20)
@@ -43,6 +45,7 @@ export const useAnnouncementStore = defineStore('announcements', () => {
       if (generation !== fetchGeneration) return
       // Revert throttle timestamp on failure so retry is allowed
       lastFetchTime.value = 0
+      loadError.value = true
       console.error('Failed to fetch announcements:', err)
     } finally {
       if (generation === fetchGeneration) loading.value = false
@@ -131,12 +134,14 @@ export const useAnnouncementStore = defineStore('announcements', () => {
     popupQueue.value = []
     currentPopup.value = null
     loading.value = false
+    loadError.value = false
   }
 
   return {
     // State
     announcements,
     loading,
+    loadError,
     currentPopup,
     // Getters
     unreadCount,

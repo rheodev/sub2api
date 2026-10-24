@@ -64,6 +64,108 @@ async function capture(page: Page, name: string, project: string) {
 }
 
 for (const dark of [false, true]) {
+  test(`announcement dialog recovery, reading and keyboard focus (${dark ? 'dark' : 'light'})`, async ({ page }, info) => {
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
+    await prepare(page, 'user', dark)
+    const title = '系统维护与服务升级通知 / Scheduled maintenance and service updates'
+    const notices = [1, 2, 3].map(id => ({ id, title: id === 1 ? title : `公告 ${id} / Notice ${id}`, content: '# 服务更新\n\n请查看以下调整。\n\n- 保留现有接入方式\n- 升级完成后恢复使用\n\n```json\n{"workspace":"' + 'long-value-'.repeat(20) + '"}\n```\n\n| 项目 | 状态 |\n| --- | --- |\n| API 服务 | 正常 |\n\n<script>window.__announcementInjected = true</script>', notify_mode: 'silent', read_at: null as string | null, created_at: timestamp, updated_at: timestamp }))
+    const wideTable = ['| ' + Array.from({ length: 12 }, (_, i) => `Column ${i + 1}`).join(' | ') + ' |', '| ' + Array(12).fill('---').join(' | ') + ' |', '| ' + Array(12).fill('Wide table content').join(' | ') + ' |'].join('\n')
+    notices.forEach(notice => { notice.content += '\n\n' + wideTable })
+    let failList = true
+    let empty = false
+    let failRead = true
+    const reads: number[] = []
+    await page.route(/\/api\/v1\/announcements(?:\?|$)/, route => failList
+      ? route.fulfill({ status: 503, json: { message: 'Preview unavailable' } })
+      : route.fulfill({ json: { code: 0, data: empty ? [] : notices } }))
+    await page.route(/\/api\/v1\/announcements\/\d+\/read$/, async route => {
+      const id = Number(new URL(route.request().url()).pathname.split('/').at(-2))
+      reads.push(id)
+      if (failRead && id !== 3) return route.fulfill({ status: 503, json: { message: 'Preview unavailable' } })
+      notices.find(item => item.id === id)!.read_at = new Date().toISOString()
+      return route.fulfill({ json: { code: 0, data: { message: 'ok' } } })
+    })
+    await page.goto('/keys')
+    const bell = page.locator('.announcement-bell')
+    await bell.click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toHaveCount(1)
+    await expect(dialog.locator('.announcement-error')).toBeVisible()
+    await expect(dialog.getByText('暂无公告', { exact: true })).toHaveCount(0)
+    failList = false
+    await dialog.getByRole('button', { name: '重新加载' }).click()
+    const row = dialog.getByRole('button', { name: new RegExp(title.split(' / ')[0]) })
+    await expect(row).toBeVisible()
+    await expect(bell).toHaveAttribute('aria-label', '公告，3 条未读')
+    await capture(page, `announcements-list-${dark ? 'dark' : 'light'}`, info.project.name)
+    await row.focus()
+    await page.keyboard.press('Enter')
+    await expect(dialog).toHaveCount(1)
+    await expect(dialog.locator('.announcement-error-text')).toContainText('未能标记为已读')
+    await expect(dialog.locator('.markdown-body')).toContainText('服务更新')
+    expect(await page.evaluate(() => (window as Window & { __announcementInjected?: boolean }).__announcementInjected)).toBeUndefined()
+    const tableSizes = await dialog.locator('.announcement-table-scroll').evaluateAll(wrappers => wrappers.map(wrapper => {
+      const table = wrapper.querySelector('table')!
+      const lastCell = table.querySelector('tbody tr')!.lastElementChild!
+      return { viewport: wrapper.clientWidth, content: wrapper.scrollWidth, table: table.getBoundingClientRect().width, cellRight: lastCell.getBoundingClientRect().right, tableRight: table.getBoundingClientRect().right }
+    }))
+    expect(Math.abs(tableSizes[0].table - tableSizes[0].viewport)).toBeLessThanOrEqual(2)
+    expect(Math.abs(tableSizes[0].cellRight - tableSizes[0].tableRight)).toBeLessThanOrEqual(2)
+    expect(tableSizes[1].content).toBeGreaterThan(tableSizes[1].viewport)
+    await dialog.locator('.announcement-table-scroll').nth(1).evaluate(element => { element.scrollLeft = 100 })
+    expect(await dialog.locator('.announcement-table-scroll').nth(1).evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+    await capture(page, `announcements-detail-${dark ? 'dark' : 'light'}`, info.project.name)
+    await page.keyboard.press('Escape')
+    await expect(row).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(dialog.locator('.announcement-error-text')).toBeVisible()
+    failRead = false
+    await dialog.getByRole('button', { name: '标记已读', exact: true }).click()
+    await expect(row).toBeFocused()
+    await expect(bell).toHaveAttribute('aria-label', '公告，2 条未读')
+    failRead = true
+    await dialog.getByRole('button', { name: '全部已读', exact: true }).click()
+    await expect(dialog.locator('.announcement-error-text')).toContainText('部分公告未能标记为已读')
+    await expect(dialog.locator('.announcement-row')).toHaveCount(3)
+    await expect(bell).toHaveAttribute('aria-label', '公告，1 条未读')
+    failRead = false
+    await dialog.getByRole('button', { name: '全部已读', exact: true }).click()
+    await expect(bell).toHaveAttribute('aria-label', '公告')
+    expect(reads.filter(id => id === 2)).toHaveLength(2)
+    expect(reads.filter(id => id === 3)).toHaveLength(1)
+    await expect(dialog.getByRole('button', { name: '刷新', exact: true })).toBeFocused()
+    failList = true
+    await dialog.getByRole('button', { name: '刷新', exact: true }).click()
+    await expect(dialog.locator('.announcement-error')).toContainText('当前显示上次加载的公告')
+    await expect(dialog.locator('.announcement-row')).toHaveCount(3)
+    const close = dialog.locator('.modal-header button')
+    await close.focus()
+    await page.keyboard.press('Shift+Tab')
+    await expect(dialog.locator('.announcement-footer button')).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(close).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
+    await expect(bell).toBeFocused()
+    failList = false
+    await page.evaluate(() => localStorage.setItem('sub2api_locale', 'en'))
+    await page.reload()
+    await bell.click()
+    await expect(dialog).toContainText('3 announcements, 0 unread')
+    await capture(page, `announcements-list-${dark ? 'dark' : 'light'}-en`, info.project.name)
+    await dialog.locator('.announcement-row').first().click()
+    await expect(dialog.getByRole('button', { name: 'Back to announcements', exact: true })).toHaveCount(2)
+    await capture(page, `announcements-detail-${dark ? 'dark' : 'light'}-en`, info.project.name)
+    await page.keyboard.press('Escape')
+    empty = true
+    await dialog.getByRole('button', { name: 'Refresh', exact: true }).click()
+    await expect(dialog).toContainText('No announcements')
+    expect(errors).toEqual([])
+  })
+}
+
+for (const dark of [false, true]) {
   test(`subscriptions quota details, retry and renewal (${dark ? 'dark' : 'light'})`, async ({ page }, info) => {
     const errors: string[] = []
     page.on('pageerror', error => errors.push(error.message))

@@ -87,6 +87,16 @@ export default {
 
   // Announcements Page
   announcements: {
+    tableContent: '公告表格，可横向滚动',
+    bellUnread: '公告，{count} 条未读',
+    listSummary: '共 {count} 条公告，{unread} 条未读',
+    backToList: '返回公告列表',
+    loadFailed: '公告加载失败，请重试。',
+    refreshFailed: '刷新失败，当前显示上次加载的公告。',
+    retry: '重新加载',
+    readFailed: '未能标记为已读，请重试。',
+    markAllFailed: '部分公告未能标记为已读，请重试。已成功的记录会保留。',
+    markingRead: '正在标记…',
     title: '公告',
     description: '查看系统公告',
     unreadOnly: '仅显示未读',

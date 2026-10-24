@@ -1,318 +1,85 @@
 <template>
-  <div>
-    <!-- 铃铛按钮 -->
-    <button
-      @click="openModal"
-      class="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition-all hover:bg-gray-100 hover:scale-105 dark:text-gray-400 dark:hover:bg-dark-800"
-      :class="{ 'text-blue-600 dark:text-blue-400': unreadCount > 0 }"
-      :aria-label="t('announcements.title')"
-    >
-      <Icon name="bell" size="md" />
-      <!-- 未读红点 -->
-      <span
-        v-if="unreadCount > 0"
-        class="absolute right-1 top-1 flex h-2 w-2"
-      >
-        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
-        <span class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
-      </span>
-    </button>
+  <button
+    ref="bellRef"
+    type="button"
+    class="announcement-bell"
+    :aria-label="unreadCount ? t('announcements.bellUnread', { count: unreadCount }) : t('announcements.title')"
+    :aria-expanded="isModalOpen"
+    aria-haspopup="dialog"
+    @click="openModal"
+  >
+    <Icon name="bell" size="md" />
+    <span v-if="unreadCount" class="announcement-dot" aria-hidden="true" />
+  </button>
 
-    <!-- 公告列表 Modal -->
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div
-          v-if="isModalOpen"
-          class="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-gradient-to-br from-black/70 via-black/60 to-black/70 p-4 pt-[8vh] backdrop-blur-md"
-          @click="closeModal"
-        >
-          <div
-            class="w-full max-w-[620px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 dark:bg-dark-800 dark:ring-white/10"
-            @click.stop
-          >
-            <!-- Header with Gradient -->
-            <div class="relative overflow-hidden border-b border-gray-100/80 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 px-6 py-5 dark:border-dark-700/50 dark:from-blue-900/10 dark:to-indigo-900/5">
-              <div class="relative z-10 flex items-start justify-between">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30">
-                      <Icon name="bell" size="sm" />
-                    </div>
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                      {{ t('announcements.title') }}
-                    </h2>
-                  </div>
-                  <p v-if="unreadCount > 0" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span class="font-medium text-blue-600 dark:text-blue-400">{{ unreadCount }}</span>
-                    {{ t('announcements.unread') }}
-                  </p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    v-if="unreadCount > 0"
-                    @click="markAllAsRead"
-                    :disabled="loading"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-700 hover:shadow-xl disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-                  >
-                    {{ t('announcements.markAllRead') }}
-                  </button>
-                  <button
-                    @click="closeModal"
-                    class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/50 text-gray-500 backdrop-blur-sm transition-all hover:bg-white hover:text-gray-700 dark:bg-dark-700/50 dark:text-gray-400 dark:hover:bg-dark-700 dark:hover:text-gray-300"
-                    :aria-label="t('common.close')"
-                  >
-                    <Icon name="x" size="sm" />
-                  </button>
-                </div>
-              </div>
-              <!-- Decorative gradient -->
-              <div class="absolute right-0 top-0 h-full w-48 bg-gradient-to-l from-indigo-100/20 to-transparent dark:from-indigo-900/10"></div>
-            </div>
-
-            <!-- Body -->
-            <div class="max-h-[65vh] overflow-y-auto">
-              <!-- Loading -->
-              <div v-if="loading" class="flex items-center justify-center py-16">
-                <div class="relative">
-                  <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600 dark:border-dark-600 dark:border-t-blue-400"></div>
-                  <div class="absolute inset-0 h-12 w-12 animate-pulse rounded-full border-4 border-blue-400/30"></div>
-                </div>
-              </div>
-
-              <!-- Announcements List -->
-              <div v-else-if="announcements.length > 0">
-                <div
-                  v-for="item in announcements"
-                  :key="item.id"
-                  class="group relative flex items-center gap-4 border-b border-gray-100 px-6 py-4 transition-all hover:bg-gray-50 dark:border-dark-700 dark:hover:bg-dark-700/30"
-                  :class="{ 'bg-blue-50/30 dark:bg-blue-900/5': !item.read_at }"
-                  style="min-height: 72px"
-                  @click="openDetail(item)"
-                >
-                  <!-- Status Indicator -->
-                  <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center">
-                    <div
-                      v-if="!item.read_at"
-                      class="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
-                    >
-                      <!-- Pulse ring -->
-                      <span class="absolute inline-flex h-full w-full animate-ping rounded-xl bg-blue-400 opacity-75"></span>
-                      <!-- Icon -->
-                      <svg class="relative z-10 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div
-                      v-else
-                      class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-gray-400 dark:bg-dark-700 dark:text-gray-600"
-                    >
-                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <!-- Content -->
-                  <div class="flex min-w-0 flex-1 items-center justify-between gap-4">
-                    <div class="min-w-0 flex-1">
-                      <h3 class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                        {{ item.title }}
-                      </h3>
-                      <div class="mt-1 flex items-center gap-2">
-                        <time class="text-xs text-gray-500 dark:text-gray-400">
-                          {{ formatRelativeTime(item.created_at) }}
-                        </time>
-                        <span
-                          v-if="!item.read_at"
-                          class="inline-flex items-center gap-1 rounded-md bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-                        >
-                          <span class="relative flex h-1.5 w-1.5">
-                            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75"></span>
-                            <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-blue-600"></span>
-                          </span>
-                          {{ t('announcements.unread') }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Arrow -->
-                    <div class="flex-shrink-0">
-                      <svg
-                        class="h-5 w-5 text-gray-400 transition-transform group-hover:translate-x-1 dark:text-gray-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <!-- Unread indicator bar -->
-                  <div
-                    v-if="!item.read_at"
-                    class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-500 to-indigo-600"
-                  ></div>
-                </div>
-              </div>
-
-              <!-- Empty State -->
-              <div v-else class="flex flex-col items-center justify-center py-16">
-                <div class="relative mb-4">
-                  <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-dark-700 dark:to-dark-600">
-                    <Icon name="inbox" size="xl" class="text-gray-400 dark:text-gray-500" />
-                  </div>
-                  <div class="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white">
-                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('announcements.empty') }}</p>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('announcements.emptyDescription') }}</p>
-              </div>
-            </div>
-          </div>
+  <BaseDialog
+    :show="isModalOpen"
+    :title="selectedAnnouncement?.title || t('announcements.title')"
+    :close-label="selectedAnnouncement ? t('announcements.backToList') : t('common.close')"
+    width="wide"
+    :z-index="100"
+    close-on-click-outside
+    @close="handleClose"
+  >
+    <section v-if="selectedAnnouncement" ref="detailRef" tabindex="-1" class="announcement-detail">
+      <div class="announcement-meta">
+        <time :datetime="selectedAnnouncement.created_at">{{ formatRelativeWithDateTime(selectedAnnouncement.created_at) }}</time>
+        <span :class="['badge', selectedAnnouncement.read_at ? 'badge-gray' : 'badge-primary']">{{ t(selectedAnnouncement.read_at ? 'announcements.read' : 'announcements.unread') }}</span>
+      </div>
+      <div class="markdown-body announcement-content" v-html="renderedContent" />
+      <p v-if="readError" class="announcement-error-text" role="alert">{{ t('announcements.readFailed') }}</p>
+      <p v-else class="announcement-read-status" role="status">{{ t(readPending ? 'announcements.markingRead' : selectedAnnouncement.read_at ? 'announcements.readStatus' : 'announcements.markReadHint') }}</p>
+    </section>
+    <section v-else ref="listRef" class="announcement-list" :aria-busy="loading || markingAll">
+      <div class="announcement-toolbar">
+        <span role="status">{{ t('announcements.listSummary', { count: announcements.length, unread: unreadCount }) }}</span>
+        <div class="announcement-toolbar-actions">
+          <button ref="refreshRef" type="button" class="btn btn-secondary btn-sm" :disabled="loading || markingAll || !!readPending" :aria-label="t('common.refresh')" @click="refreshAnnouncements">
+            <Icon name="refresh" size="sm" :class="{ 'animate-spin': loading && !markingAll }" />
+          </button>
+          <button v-if="unreadCount" type="button" class="btn btn-secondary btn-sm" :disabled="loading || markingAll || !!readPending" @click="markAllAsRead">{{ t(markingAll ? 'announcements.markingRead' : 'announcements.markAllRead') }}</button>
         </div>
-      </Transition>
-    </Teleport>
-
-    <!-- 公告详情 Modal -->
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div
-          v-if="detailModalOpen && selectedAnnouncement"
-          class="fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto bg-gradient-to-br from-black/70 via-black/60 to-black/70 p-4 pt-[6vh] backdrop-blur-md"
-          @click="closeDetail"
-        >
-          <div
-            class="w-full max-w-[780px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 dark:bg-dark-800 dark:ring-white/10"
-            @click.stop
-          >
-            <!-- Header with Decorative Elements -->
-            <div class="relative overflow-hidden border-b border-gray-100 bg-gradient-to-br from-blue-50/80 via-indigo-50/50 to-purple-50/30 px-8 py-6 dark:border-dark-700 dark:from-blue-900/20 dark:via-indigo-900/10 dark:to-purple-900/5">
-              <!-- Decorative background elements -->
-              <div class="absolute right-0 top-0 h-full w-64 bg-gradient-to-l from-indigo-100/30 to-transparent dark:from-indigo-900/20"></div>
-              <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br from-blue-400/20 to-indigo-500/20 blur-3xl"></div>
-              <div class="absolute -left-4 -bottom-4 h-24 w-24 rounded-full bg-gradient-to-tr from-purple-400/20 to-pink-500/20 blur-2xl"></div>
-
-              <div class="relative z-10 flex items-start justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                  <!-- Icon and Category -->
-                  <div class="mb-3 flex items-center gap-2">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30">
-                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="rounded-lg bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                        {{ t('announcements.title') }}
-                      </span>
-                      <span
-                        v-if="!selectedAnnouncement.read_at"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 px-2.5 py-1 text-xs font-medium text-white shadow-lg shadow-blue-500/30"
-                      >
-                        <span class="relative flex h-2 w-2">
-                          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
-                          <span class="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
-                        </span>
-                        {{ t('announcements.unread') }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Title -->
-                  <h2 class="mb-3 text-2xl font-bold leading-tight text-gray-900 dark:text-white">
-                    {{ selectedAnnouncement.title }}
-                  </h2>
-
-                  <!-- Meta Info -->
-                  <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <div class="flex items-center gap-1.5">
-                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <time>{{ formatRelativeWithDateTime(selectedAnnouncement.created_at) }}</time>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      <span>{{ selectedAnnouncement.read_at ? t('announcements.read') : t('announcements.unread') }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Close button -->
-                <button
-                  @click="closeDetail"
-                  class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/50 text-gray-500 backdrop-blur-sm transition-all hover:bg-white hover:text-gray-700 hover:shadow-lg dark:bg-dark-700/50 dark:text-gray-400 dark:hover:bg-dark-700 dark:hover:text-gray-300"
-                  :aria-label="t('common.close')"
-                >
-                  <Icon name="x" size="md" />
-                </button>
-              </div>
-            </div>
-
-            <!-- Body with Enhanced Markdown -->
-            <div class="max-h-[60vh] overflow-y-auto bg-white px-8 py-8 dark:bg-dark-800">
-              <!-- Content with decorative border -->
-              <div class="relative">
-                <!-- Decorative left border -->
-                <div class="absolute left-0 top-0 bottom-0 w-1 rounded-full bg-gradient-to-b from-blue-500 via-indigo-500 to-purple-500"></div>
-
-                <div class="pl-6">
-                  <div
-                    class="markdown-body prose prose-sm max-w-none dark:prose-invert"
-                    v-html="renderMarkdown(selectedAnnouncement.content)"
-                  ></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer with Actions -->
-            <div class="border-t border-gray-100 bg-gray-50/50 px-8 py-5 dark:border-dark-700 dark:bg-dark-900/30">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>{{ selectedAnnouncement.read_at ? t('announcements.readStatus') : t('announcements.markReadHint') }}</span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <button
-                    @click="closeDetail"
-                    class="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow dark:border-dark-600 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
-                  >
-                    {{ t('common.close') }}
-                  </button>
-                  <button
-                    v-if="!selectedAnnouncement.read_at"
-                    @click="markAsReadAndClose(selectedAnnouncement.id)"
-                    class="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl hover:scale-105"
-                  >
-                    <span class="flex items-center gap-2">
-                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      {{ t('announcements.markRead') }}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-  </div>
+      </div>
+      <div v-if="loadError" class="announcement-error" role="alert">
+        <p>{{ t(announcements.length ? 'announcements.refreshFailed' : 'announcements.loadFailed') }}</p>
+        <button type="button" class="btn btn-secondary btn-sm" :disabled="loading || markingAll" @click="refreshAnnouncements">{{ t('announcements.retry') }}</button>
+      </div>
+      <p v-if="batchError" class="announcement-error-text" role="alert">{{ t('announcements.markAllFailed') }}</p>
+      <div v-if="loading && !markingAll && !announcements.length" class="announcement-empty" role="status">{{ t('common.loading') }}</div>
+      <ul v-else-if="announcements.length" class="announcement-rows">
+        <li v-for="item in announcements" :key="item.id">
+          <button :ref="el => setRowRef(item.id, el)" type="button" class="announcement-row" :class="{ 'is-unread': !item.read_at }" :disabled="loading || markingAll || !!readPending" @click="openDetail(item)">
+            <span class="announcement-row-content">
+              <span class="announcement-row-title">{{ item.title }}</span>
+              <span class="announcement-meta">
+                <time :datetime="item.created_at" :title="formatRelativeWithDateTime(item.created_at)">{{ formatRelativeTime(item.created_at) }}</time>
+                <span :class="['badge', item.read_at ? 'badge-gray' : 'badge-primary']">{{ t(item.read_at ? 'announcements.read' : 'announcements.unread') }}</span>
+              </span>
+            </span>
+            <Icon name="chevronRight" size="sm" />
+          </button>
+        </li>
+      </ul>
+      <div v-else-if="!loadError" class="announcement-empty">
+        <Icon name="inbox" size="xl" />
+        <h4>{{ t('announcements.empty') }}</h4>
+        <p>{{ t('announcements.emptyDescription') }}</p>
+      </div>
+    </section>
+    <template #footer>
+      <div class="announcement-footer">
+        <template v-if="selectedAnnouncement">
+          <button type="button" class="btn btn-secondary" @click="closeDetail"><Icon name="chevronLeft" size="sm" />{{ t('announcements.backToList') }}</button>
+          <button v-if="!selectedAnnouncement.read_at" type="button" class="btn btn-primary" :disabled="!!readPending" @click="markAsReadAndClose(selectedAnnouncement.id)">{{ t(readPending ? 'announcements.markingRead' : 'announcements.markRead') }}</button>
+        </template>
+        <button v-else ref="listCloseRef" type="button" class="btn btn-secondary" @click="closeModal">{{ t('common.close') }}</button>
+      </div>
+    </template>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, nextTick, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { marked } from 'marked'
@@ -322,156 +89,170 @@ import { useAnnouncementStore } from '@/stores/announcements'
 import { formatRelativeTime, formatRelativeWithDateTime } from '@/utils/format'
 import type { UserAnnouncement } from '@/types'
 import Icon from '@/components/icons/Icon.vue'
+import BaseDialog from '@/components/common/BaseDialog.vue'
 import '@/styles/announcement-markdown.css'
 
 const { t } = useI18n()
 const appStore = useAppStore()
 const announcementStore = useAnnouncementStore()
-
-// Configure marked
-marked.setOptions({
-  breaks: true,
-  gfm: true,
+const { announcements, loading, loadError, unreadCount } = storeToRefs(announcementStore)
+const isModalOpen = ref(false)
+const selectedAnnouncement = ref<UserAnnouncement | null>(null)
+const markingAll = ref(false)
+const readPending = ref<number | null>(null)
+const readError = ref(false)
+const batchError = ref(false)
+const bellRef = ref<HTMLButtonElement | null>(null)
+const refreshRef = ref<HTMLButtonElement | null>(null)
+const detailRef = ref<HTMLElement | null>(null)
+const listRef = ref<HTMLElement | null>(null)
+const listCloseRef = ref<HTMLButtonElement | null>(null)
+const rowRefs = new Map<number, HTMLButtonElement>()
+let listScrollTop = 0
+const renderedContent = computed(() => {
+  const content = document.createElement('template')
+  content.innerHTML = DOMPurify.sanitize(marked.parse(selectedAnnouncement.value?.content || '', { breaks: true, gfm: true }) as string)
+  content.content.querySelectorAll('table').forEach(table => {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'announcement-table-scroll'
+    wrapper.tabIndex = 0
+    wrapper.setAttribute('role', 'region')
+    wrapper.setAttribute('aria-label', t('announcements.tableContent'))
+    table.replaceWith(wrapper)
+    wrapper.append(table)
+  })
+  return content.innerHTML
 })
 
-// Use store state (storeToRefs for reactivity)
-const { announcements, loading } = storeToRefs(announcementStore)
-const unreadCount = computed(() => announcementStore.unreadCount)
-
-// Local modal state
-const isModalOpen = ref(false)
-const detailModalOpen = ref(false)
-const selectedAnnouncement = ref<UserAnnouncement | null>(null)
-
-// Methods
-function renderMarkdown(content: string): string {
-  if (!content) return ''
-  const html = marked.parse(content) as string
-  return DOMPurify.sanitize(html)
+function setRowRef(id: number, element: Element | ComponentPublicInstance | null) {
+  if (element instanceof HTMLButtonElement) rowRefs.set(id, element)
+  else rowRefs.delete(id)
 }
 
 function openModal() {
   isModalOpen.value = true
+  batchError.value = false
+  if (!loading.value) announcementStore.fetchAnnouncements()
 }
 
 function closeModal() {
   isModalOpen.value = false
+  selectedAnnouncement.value = null
+  nextTick(() => bellRef.value?.focus())
+}
+
+function handleClose() {
+  if (selectedAnnouncement.value) closeDetail()
+  else closeModal()
+}
+
+function refreshAnnouncements() {
+  if (loading.value || markingAll.value || readPending.value) return
+  batchError.value = false
+  announcementStore.fetchAnnouncements(true)
 }
 
 function openDetail(announcement: UserAnnouncement) {
+  listScrollTop = listRef.value?.closest('.modal-body')?.scrollTop ?? 0
   selectedAnnouncement.value = announcement
-  detailModalOpen.value = true
-  if (!announcement.read_at) {
-    markAsRead(announcement.id)
-  }
+  readError.value = false
+  nextTick(() => {
+    const body = detailRef.value?.closest('.modal-body')
+    if (body) body.scrollTop = 0
+    detailRef.value?.focus({ preventScroll: true })
+  })
+  if (!announcement.read_at) markAsRead(announcement.id)
 }
 
 function closeDetail() {
-  detailModalOpen.value = false
+  const id = selectedAnnouncement.value?.id
   selectedAnnouncement.value = null
+  readError.value = false
+  nextTick(() => {
+    const row = id ? rowRefs.get(id) : null
+    const body = listRef.value?.closest('.modal-body')
+    if (body) body.scrollTop = listScrollTop
+    ;(row && !row.disabled ? row : listCloseRef.value)?.focus({ preventScroll: true })
+  })
 }
 
 async function markAsRead(id: number) {
+  if (readPending.value) return false
+  readPending.value = id
+  readError.value = false
   try {
-    const marked = await announcementStore.markAsRead(id)
-    if (!marked) appStore.showError(t('common.unknownError'))
-    return marked
-  } catch (err: any) {
-    appStore.showError(err?.message || t('common.unknownError'))
-    return false
+    const success = await announcementStore.markAsRead(id)
+    if (selectedAnnouncement.value?.id === id) readError.value = !success
+    return success
+  } finally {
+    readPending.value = null
   }
 }
 
 async function markAsReadAndClose(id: number) {
   if (!await markAsRead(id)) return
   appStore.showSuccess(t('announcements.markedAsRead'))
-  closeDetail()
+  if (selectedAnnouncement.value?.id === id) closeDetail()
 }
 
 async function markAllAsRead() {
+  if (markingAll.value || loading.value || readPending.value) return
+  markingAll.value = true
+  batchError.value = false
   try {
     await announcementStore.markAllAsRead()
     appStore.showSuccess(t('announcements.allMarkedAsRead'))
-  } catch (err: any) {
-    appStore.showError(err?.message || t('common.unknownError'))
+  } catch {
+    batchError.value = true
+  } finally {
+    markingAll.value = false
+  }
+  if (!batchError.value) {
+    await nextTick()
+    refreshRef.value?.focus()
   }
 }
-
-function handleEscape(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
-    if (detailModalOpen.value) {
-      closeDetail()
-    } else if (isModalOpen.value) {
-      closeModal()
-    }
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('keydown', handleEscape)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('keydown', handleEscape)
-  document.body.style.overflow = ''
-})
-
-watch(
-  [isModalOpen, detailModalOpen, () => announcementStore.currentPopup],
-  ([modal, detail, popup]) => {
-    document.body.style.overflow = (modal || detail || popup) ? 'hidden' : ''
-  }
-)
 </script>
 
 <style scoped>
-/* Modal Animations */
-.modal-fade-enter-active {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.modal-fade-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.modal-fade-enter-from > div {
-  transform: scale(0.94) translateY(-12px);
-  opacity: 0;
-}
-
-.modal-fade-leave-to > div {
-  transform: scale(0.96) translateY(-8px);
-  opacity: 0;
-}
-
-/* Scrollbar Styling */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 8px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #cbd5e1, #94a3b8);
-  border-radius: 4px;
-}
-
-.dark .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #4b5563, #374151);
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #94a3b8, #64748b);
-}
-
-.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #6b7280, #4b5563);
+.announcement-bell { position: relative; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 6px; color: var(--ws-muted); }
+.announcement-bell:hover { background: var(--ws-inset); color: var(--ws-text); }
+.announcement-dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; background: #dc2626; border-radius: 50%; }
+.announcement-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 16px; color: var(--ws-muted); font-size: 13px; }
+.announcement-toolbar-actions, .announcement-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.announcement-rows { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ws-border); }
+.announcement-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 12px; border-bottom: 1px solid var(--ws-border); text-align: left; border-radius: 4px; }
+.announcement-row:hover { background: var(--ws-inset); }
+.announcement-row:disabled { cursor: wait; }
+.announcement-row.is-unread { background: var(--ws-selected); }
+.announcement-row-content { min-width: 0; }
+.announcement-row-title { display: block; font-size: 14px; line-height: 1.6; color: var(--ws-text); overflow-wrap: anywhere; }
+.is-unread .announcement-row-title { font-weight: 600; }
+.announcement-row > svg { flex-shrink: 0; color: var(--ws-muted); }
+.announcement-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; font-size: 12px; color: var(--ws-muted); }
+.announcement-row .announcement-meta { margin-top: 6px; }
+.announcement-detail { outline: none; min-width: 0; }
+.announcement-content { margin-top: 24px; overflow-wrap: anywhere; }
+.announcement-content :deep(img) { max-width: 100%; height: auto; }
+.announcement-content :deep(.announcement-table-scroll) { width: 100%; max-width: 100%; overflow-x: auto; margin-bottom: 20px; }
+.announcement-content :deep(table) { display: table; width: 100%; margin-bottom: 0; overflow-wrap: normal; }
+.announcement-content :deep(blockquote) { border-left-width: 1px; background: var(--ws-inset); }
+.announcement-content :deep(blockquote::before) { content: none; }
+.announcement-content :deep(h1) { font-size: 24px; }
+.announcement-content :deep(h2) { font-size: 20px; }
+.announcement-content :deep(h3) { font-size: 17px; }
+.announcement-content :deep(pre) { max-width: 100%; }
+.announcement-read-status { margin-top: 20px; font-size: 12px; color: var(--ws-muted); }
+.announcement-footer { justify-content: flex-end; width: 100%; }
+.announcement-footer .btn { gap: 6px; }
+.announcement-error { padding: 16px; margin-bottom: 12px; border: 1px solid var(--ws-border); border-radius: 6px; font-size: 13px; color: var(--ws-text); }
+.announcement-error .btn { margin-top: 12px; }
+.announcement-error-text { margin: 12px 0; color: #b91c1c; font-size: 13px; }
+:global(.dark) .announcement-error-text { color: #fca5a5; }
+.announcement-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 48px 16px; color: var(--ws-muted); text-align: center; }
+.announcement-empty h4 { color: var(--ws-text); font-size: 15px; font-weight: 600; }
+.announcement-empty p { font-size: 13px; }
+@media (max-width: 479px) {
+  .announcement-row { padding: 16px 8px; gap: 8px; }
 }
 </style>
