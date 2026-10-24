@@ -93,6 +93,67 @@ describe('useAppStore', () => {
   // --- Toast 消息管理 ---
 
   describe('Toast 消息管理', () => {
+    it('重复提示复用 ID 并重新计算停留时间', () => {
+      const store = useAppStore()
+      const id = store.showSuccess('保存成功')
+      vi.advanceTimersByTime(2000)
+      expect(store.showSuccess('保存成功')).toBe(id)
+      expect(store.toasts).toHaveLength(1)
+      vi.advanceTimersByTime(2999)
+      expect(store.toasts).toHaveLength(1)
+      vi.advanceTimersByTime(1)
+      expect(store.toasts).toHaveLength(0)
+    })
+
+    it('最多保留三条提示并清理被替换提示的计时器', () => {
+      const store = useAppStore()
+      for (let i = 0; i < 4; i++) store.showSuccess(`消息${i}`)
+      expect(store.toasts.map(toast => toast.message)).toEqual(['消息1', '消息2', '消息3'])
+      expect(vi.getTimerCount()).toBe(3)
+      store.clearAllToasts()
+      expect(vi.getTimerCount()).toBe(0)
+    })
+
+    it('暂停后恢复剩余时间，重复暂停不会缩短阅读时间', () => {
+      const store = useAppStore()
+      const id = store.showError('保存失败')
+      vi.advanceTimersByTime(2000)
+      store.pauseToast(id)
+      vi.advanceTimersByTime(10000)
+      store.pauseToast(id)
+      expect(store.toasts).toHaveLength(1)
+      store.resumeToast(id)
+      vi.advanceTimersByTime(2999)
+      expect(store.toasts).toHaveLength(1)
+      vi.advanceTimersByTime(1)
+      expect(store.toasts).toHaveLength(0)
+    })
+
+    it('暂停时合并重复提示仍保持暂停，恢复后使用新时长', () => {
+      const store = useAppStore()
+      const id = store.showSuccess('保存成功')
+      store.pauseToast(id)
+      store.showSuccess('保存成功')
+      vi.advanceTimersByTime(10000)
+      expect(store.toasts).toHaveLength(1)
+      store.resumeToast(id)
+      vi.advanceTimersByTime(3000)
+      expect(store.toasts).toHaveLength(0)
+    })
+
+    it('常驻消息不会自动消失，关闭和重置会清理计时器', () => {
+      const store = useAppStore()
+      const id = store.showToast('info', '等待操作')
+      store.pauseToast(id)
+      store.resumeToast(id)
+      vi.advanceTimersByTime(10000)
+      expect(store.toasts).toHaveLength(1)
+      store.showSuccess('保存成功')
+      store.reset()
+      expect(store.toasts).toHaveLength(0)
+      expect(vi.getTimerCount()).toBe(0)
+    })
+
     it('showSuccess 创建 success 类型 toast', () => {
       const store = useAppStore()
       const id = store.showSuccess('操作成功')
