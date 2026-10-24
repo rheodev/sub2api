@@ -64,6 +64,78 @@ async function capture(page: Page, name: string, project: string) {
 }
 
 for (const dark of [false, true]) {
+  test(`subscriptions quota details, retry and renewal (${dark ? 'dark' : 'light'})`, async ({ page }, info) => {
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
+    await prepare(page, 'user', dark, false, { payment_enabled: true })
+    const now = Date.now()
+    const group = { id: 42, name: '日常开发与数据分析订阅 / Development and analytics workspace', platform: 'openai', description: '团队日常开发使用的订阅，保留高峰倍率与不同周期的额度说明。', rate_multiplier: 1.2, peak_rate_enabled: true, peak_start: '14:00', peak_end: '18:00', peak_rate_multiplier: 2, daily_limit_usd: 10, weekly_limit_usd: 50, monthly_limit_usd: 100 }
+    const base = { id: 1, user_id: 91, group_id: 42, status: 'active', starts_at: new Date(now - 7 * 86400000).toISOString(), expires_at: new Date(now + 2 * 86400000).toISOString(), daily_usage_usd: 12, weekly_usage_usd: 35, monthly_usage_usd: 40, daily_window_start: new Date(now - 25 * 3600000).toISOString(), weekly_window_start: null, monthly_window_start: new Date(now - 86400000).toISOString(), created_at: timestamp, updated_at: timestamp, group }
+    const subscriptions = [
+      base,
+      { ...base, id: 2, group_id: 43, expires_at: null, group: { ...group, id: 43, name: '无限额度订阅 / Unlimited', description: '', daily_limit_usd: null, weekly_limit_usd: null, monthly_limit_usd: null } },
+      { ...base, id: 3, group_id: 44, status: 'expired', expires_at: timestamp, group: { ...group, id: 44, name: '已过期套餐 / Expired plan' } },
+      { ...base, id: 4, group: undefined },
+      { ...base, id: 5, starts_at: new Date(now - 3600000).toISOString(), expires_at: new Date(now + 2 * 3600000).toISOString(), daily_usage_usd: 1, group: { ...group, name: '单日额度 / One-time quota', weekly_limit_usd: null, monthly_limit_usd: null } },
+    ]
+    let fail = true
+    let empty = false
+    await page.route(/\/api\/v1\/subscriptions(?:\?|$)/, route => fail
+      ? route.fulfill({ status: 503, json: { message: 'Preview unavailable' } })
+      : route.fulfill({ json: { code: 0, data: empty ? [] : subscriptions } }))
+    await page.goto('/subscriptions')
+    await expect(page.locator('.subscriptions-error')).toBeVisible()
+    await expect(page.locator('.subscriptions-empty')).toHaveCount(0)
+    fail = false
+    await page.locator('.subscriptions-error button').click()
+    await expect(page.locator('.subscription-card')).toHaveCount(5)
+    const first = page.locator('.subscription-card').first()
+    await expect(first.getByRole('progressbar', { name: '每日' })).toHaveAttribute('aria-valuenow', '10')
+    await expect(first).toContainText('本周期额度已用完')
+    await expect(first).toContainText('周期已结束，下次使用时重置')
+    await expect(first).toContainText('等待首次使用')
+    await expect(first.getByRole('link', { name: '续费', exact: true })).toHaveAttribute('href', '/purchase?tab=subscription&group=42')
+    await expect(page.locator('.subscription-card').nth(1)).toContainText('该订阅无用量限制')
+    await expect(page.locator('.subscription-card').nth(2).locator('.subscription-expiration')).toContainText('2026')
+    await expect(page.locator('.subscription-card').nth(2).getByRole('link')).toHaveCount(0)
+    await expect(page.locator('.subscription-card').nth(3)).toContainText('暂时无法获取此订阅的分组和额度信息')
+    await expect(page.locator('.subscription-card').nth(3)).not.toContainText('无限制')
+    await expect(page.locator('.subscription-card').nth(4)).toContainText('额度将在')
+    await capture(page, `subscriptions-${dark ? 'dark' : 'light'}`, info.project.name)
+    fail = true
+    await page.locator('.subscriptions-toolbar button').click()
+    await expect(page.locator('.subscriptions-error')).toContainText('当前保留上次加载的信息')
+    await expect(page.locator('.subscription-card')).toHaveCount(5)
+    fail = false
+    await page.locator('.subscriptions-error button').click()
+    await expect(page.locator('.subscriptions-error')).toHaveCount(0)
+    await page.evaluate(() => localStorage.setItem('sub2api_locale', 'en'))
+    await page.reload()
+    await expect(page.locator('.subscriptions-page')).toContainText('5 subscriptions')
+    await expect(page.locator('.subscription-card').first()).toContainText('Quota exhausted for this period')
+    await capture(page, `subscriptions-${dark ? 'dark' : 'light'}-en`, info.project.name)
+    empty = true
+    await page.locator('.subscriptions-toolbar button').click()
+    await expect(page.locator('.subscriptions-empty')).toBeVisible()
+    await expect(page.locator('.subscriptions-empty a')).toHaveAttribute('href', '/purchase?tab=subscription')
+    expect(errors).toEqual([])
+  })
+}
+
+test('subscriptions hide renewal when payments are disabled', async ({ page }) => {
+  await prepare(page, 'user')
+  let empty = false
+  await page.route(/\/api\/v1\/subscriptions(?:\?|$)/, route => route.fulfill({ json: { code: 0, data: empty ? [] : [{ id: 1, group_id: 1, status: 'active', expires_at: null, group: { name: 'Preview plan', platform: 'openai' } }] } }))
+  await page.goto('/subscriptions')
+  await expect(page.locator('.subscription-card')).toHaveCount(1)
+  await expect(page.locator('.subscriptions-page a[href^="/purchase"]')).toHaveCount(0)
+  empty = true
+  await page.locator('.subscriptions-toolbar button').click()
+  await expect(page.locator('.subscriptions-empty')).toBeVisible()
+  await expect(page.locator('.subscriptions-page a[href^="/purchase"]')).toHaveCount(0)
+})
+
+for (const dark of [false, true]) {
   test(`API key filters, recovery and column keyboard controls (${dark ? 'dark' : 'light'})`, async ({ page }, info) => {
     const errors: string[] = []
     page.on('pageerror', error => errors.push(error.message))

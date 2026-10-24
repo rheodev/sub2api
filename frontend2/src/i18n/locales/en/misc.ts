@@ -113,6 +113,20 @@ export default {
 
   // User Subscriptions Page
   userSubscriptions: {
+    subscriptionCount: '{count} subscriptions',
+    groupFallback: 'Group #{id}',
+    loadErrorHint: 'Subscription information is temporarily unavailable. Please try again.',
+    refreshErrorHint: 'Refresh failed. Showing previously loaded information. Retry to get the latest usage.',
+    retry: 'Reload',
+    viewPlans: 'View subscription plans',
+    detailsUnavailable: 'Group and quota information is currently unavailable for this subscription.',
+    remainingQuota: '${amount} remaining',
+    quotaExhausted: 'Quota exhausted for this period',
+    quotaEnded: 'Quota has ended',
+    resetDue: 'Period ended. Resets on next use.',
+    durationDays: '{days}d {hours}h',
+    durationHours: '{hours}h {minutes}m',
+    durationMinutes: '{minutes}m',
     title: 'My Subscriptions',
     description: 'View your subscription plans and usage',
     noActiveSubscriptions: 'No Active Subscriptions',
@@ -120,6 +134,7 @@ export default {
       "You don't have any active subscriptions. Contact administrator to get one.",
     failedToLoad: 'Failed to load subscriptions',
     status: {
+      suspended: 'Suspended',
       active: 'Active',
       expired: 'Expired',
       revoked: 'Revoked'

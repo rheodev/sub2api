@@ -111,12 +111,27 @@ export default {
 
   // User Subscriptions Page
   userSubscriptions: {
+    subscriptionCount: '共 {count} 个订阅',
+    groupFallback: '分组 #{id}',
+    loadErrorHint: '暂时无法获取订阅信息，请重试。',
+    refreshErrorHint: '刷新失败，当前保留上次加载的信息。请重试以获取最新用量。',
+    retry: '重新加载',
+    viewPlans: '查看订阅套餐',
+    detailsUnavailable: '暂时无法获取此订阅的分组和额度信息。',
+    remainingQuota: '剩余 ${amount}',
+    quotaExhausted: '本周期额度已用完',
+    quotaEnded: '额度已结束',
+    resetDue: '周期已结束，下次使用时重置',
+    durationDays: '{days} 天 {hours} 小时',
+    durationHours: '{hours} 小时 {minutes} 分钟',
+    durationMinutes: '{minutes} 分钟',
     title: '我的订阅',
     description: '查看您的订阅计划和用量',
     noActiveSubscriptions: '暂无有效订阅',
     noActiveSubscriptionsDesc: '您没有任何有效订阅。请联系管理员获取订阅。',
     failedToLoad: '加载订阅失败',
     status: {
+      suspended: '已暂停',
       active: '有效',
       expired: '已过期',
       revoked: '已撤销'
