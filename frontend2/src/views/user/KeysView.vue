@@ -1,35 +1,48 @@
 <template>
   <AppLayout table-page>
-    <TablePageLayout>
+    <TablePageLayout class="keys-page">
       <template #filters>
         <div class="flex flex-col gap-3">
-          <div class="flex flex-wrap items-center gap-3">
-            <SearchInput
-              v-model="filterSearch"
-              :placeholder="t('keys.searchPlaceholder')"
-              class="w-full sm:w-64"
-              @search="onFilterChange"
-            />
-            <Select
-              :model-value="filterGroupId"
-              class="w-40"
-              :options="groupFilterOptions"
-              @update:model-value="onGroupFilterChange"
-            />
-            <Select
-              :model-value="filterStatus"
-              class="w-40"
-              :options="statusFilterOptions"
-              @update:model-value="onStatusFilterChange"
-            />
+          <div class="keys-filters">
+            <label class="keys-search">
+              <span class="input-label">{{ t('common.search') }}</span>
+              <SearchInput
+                v-model="filterSearch"
+                :placeholder="t('keys.searchPlaceholder')"
+                @search="onFilterChange"
+              />
+            </label>
+            <div class="keys-filter-field">
+              <label for="keys-filter-group" class="input-label">{{ t('keys.group') }}</label>
+              <Select
+                id="keys-filter-group"
+                :aria-label="t('keys.group')"
+                :model-value="filterGroupId"
+                :options="groupFilterOptions"
+                @update:model-value="onGroupFilterChange"
+              />
+            </div>
+            <div class="keys-filter-field">
+              <label for="keys-filter-status" class="input-label">{{ t('common.status') }}</label>
+              <Select
+                id="keys-filter-status"
+                :aria-label="t('common.status')"
+                :model-value="filterStatus"
+                :options="statusFilterOptions"
+                @update:model-value="onStatusFilterChange"
+              />
+            </div>
+            <button v-if="hasFilters" type="button" class="btn btn-secondary keys-reset" @click="resetFilters">
+              {{ t('common.reset') }}
+            </button>
           </div>
           <EndpointPopover
             v-if="publicSettings?.api_base_url || (publicSettings?.custom_endpoints?.length ?? 0) > 0"
             :api-base-url="publicSettings?.api_base_url || ''"
             :custom-endpoints="publicSettings?.custom_endpoints || []"
           />
-          <div v-if="selectedIds.length" class="flex flex-wrap items-center gap-3 text-sm">
-            <span class="text-gray-600 dark:text-gray-300">
+          <div v-if="selectedIds.length" class="keys-selection flex flex-wrap items-center gap-3 text-sm">
+            <span role="status">
               {{ t('keys.bulkEdit.selectedCount', { count: selectedIds.length }) }}
             </span>
             <button
@@ -48,56 +61,72 @@
       </template>
 
       <template #actions>
-        <div class="flex justify-end gap-3">
-          <button
-            @click="loadApiKeys"
-            :disabled="loading"
-            class="btn btn-secondary"
-            :title="t('common.refresh')"
-          >
-            <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-          </button>
-          <div class="relative" ref="columnDropdownRef">
+        <div class="keys-toolbar">
+          <span class="keys-result-count" role="status">{{ loading ? t('common.loading') : loadError ? t('keys.failedToLoad') : t('keys.resultCount', { count: pagination.total }) }}</span>
+          <div class="keys-toolbar-actions">
             <button
-              @click="showColumnDropdown = !showColumnDropdown"
-              class="btn btn-secondary px-2 md:px-3"
-              :title="t('keys.columnSettings')"
+              @click="loadApiKeys"
+              :disabled="loading"
+              class="btn btn-secondary"
+              :title="t('common.refresh')"
+              :aria-label="t('common.refresh')"
             >
-              <svg class="h-4 w-4 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
-              </svg>
-              <span class="hidden md:inline">{{ t('keys.columnSettings') }}</span>
+              <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
             </button>
-            <div
-              v-if="showColumnDropdown"
-              class="absolute right-0 top-full z-50 mt-1 max-h-80 w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
-            >
+            <div class="relative" ref="columnDropdownRef" @keydown.esc.stop.prevent="closeColumnSettings">
               <button
-                v-for="col in toggleableColumns"
-                :key="col.key"
-                @click="toggleColumn(col.key)"
-                class="flex w-full items-center justify-between px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
+                ref="columnTriggerRef"
+                @click="showColumnDropdown = !showColumnDropdown"
+                class="btn btn-secondary px-2 md:px-3"
+                :title="t('keys.columnSettings')"
+                :aria-label="t('keys.columnSettings')"
+                :aria-expanded="showColumnDropdown"
+                aria-controls="keys-column-options"
               >
-                <span>{{ col.label }}</span>
-                <Icon
-                  v-if="isColumnVisible(col.key)"
-                  name="check"
-                  size="sm"
-                  class="text-primary-500"
-                  :stroke-width="2"
-                />
+                <svg class="h-4 w-4 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
+                </svg>
+                <span class="hidden md:inline">{{ t('keys.columnSettings') }}</span>
               </button>
+              <div
+                v-if="showColumnDropdown"
+                id="keys-column-options"
+                role="group"
+                :aria-label="t('keys.columnSettings')"
+                class="absolute right-0 top-full z-50 mt-1 max-h-80 w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
+              >
+                <label
+                  v-for="col in toggleableColumns"
+                  :key="col.key"
+                  class="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
+                >
+                  <span>{{ col.label }}</span>
+                  <input
+                    type="checkbox"
+                    class="checkbox"
+                    :checked="isColumnVisible(col.key)"
+                    @change="toggleColumn(col.key)"
+                  />
+                </label>
+              </div>
             </div>
+            <button @click="showCreateModal = true" class="btn btn-primary" data-tour="keys-create-btn">
+              <Icon name="plus" size="md" class="mr-2" />
+              {{ t('keys.createKey') }}
+            </button>
           </div>
-          <button @click="showCreateModal = true" class="btn btn-primary" data-tour="keys-create-btn">
-            <Icon name="plus" size="md" class="mr-2" />
-            {{ t('keys.createKey') }}
-          </button>
         </div>
       </template>
 
       <template #table>
+        <div v-if="loadError" class="keys-load-error" role="alert">
+          <Icon name="refresh" size="lg" />
+          <h2>{{ t('keys.failedToLoad') }}</h2>
+          <p>{{ t('keys.loadErrorHint') }}</p>
+          <button class="btn btn-primary" :disabled="loading" @click="loadApiKeys">{{ t('keys.retry') }}</button>
+        </div>
         <DataTable
+          v-else
           :columns="columns"
           :data="apiKeys"
           :loading="loading"
@@ -107,8 +136,8 @@
           :selection-label="(key: ApiKey) => t('keys.bulkEdit.selectKey', { name: key.name })"
           @update:selected-keys="handleSelectionChange"
           :server-side-sort="true"
-          default-sort-key="created_at"
-          default-sort-order="desc"
+          :default-sort-key="sortState.sort_by"
+          :default-sort-order="sortState.sort_order"
           @sort="handleSort"
         >
           <template #cell-id="{ value }">
@@ -117,7 +146,7 @@
 
           <template #cell-key="{ value, row }">
             <div class="flex items-center gap-2">
-              <code class="code text-xs">
+              <code class="code whitespace-nowrap text-xs">
                 {{ maskApiKey(value) }}
               </code>
               <button
@@ -129,6 +158,7 @@
                     : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                 "
                 :title="copiedKeyId === row.id ? t('keys.copied') : t('keys.copyToClipboard')"
+                :aria-label="copiedKeyId === row.id ? t('keys.copied') : t('keys.copyToClipboard')"
               >
                 <Icon
                   v-if="copiedKeyId === row.id"
@@ -143,7 +173,7 @@
 
           <template #cell-name="{ value, row }">
             <div class="flex items-center gap-1.5">
-              <span class="font-medium text-gray-900 dark:text-white">{{ value }}</span>
+              <span class="keys-name font-medium text-gray-900 dark:text-white">{{ value }}</span>
               <Icon
                 v-if="row.ip_whitelist?.length > 0 || row.ip_blacklist?.length > 0"
                 name="shield"
@@ -177,7 +207,6 @@
                 <span v-else class="text-sm text-gray-400 dark:text-dark-500">{{
                   t('keys.noGroup')
                 }}</span>
-                <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('keys.selectGroup') }}</span>
                 <svg
                   class="h-3.5 w-3.5 text-gray-400 opacity-60 transition-opacity group-hover/dropdown:opacity-100"
                   fill="none"
@@ -209,19 +238,21 @@
           </template>
 
           <template #cell-usage="{ row }">
-            <div class="text-sm">
+            <div class="keys-usage text-sm tabular-nums" :aria-busy="usageLoading">
               <div class="flex items-center gap-1.5">
                 <span class="text-gray-500 dark:text-gray-400">{{ t('keys.today') }}:</span>
                 <span class="font-medium text-gray-900 dark:text-white">
-                  ${{ (usageStats[row.id]?.today_actual_cost ?? 0).toFixed(4) }}
+                  {{ usageStats[row.id] ? '$' + usageStats[row.id].today_actual_cost.toFixed(4) : '—' }}
                 </span>
               </div>
               <div class="mt-0.5 flex items-center gap-1.5">
                 <span class="text-gray-500 dark:text-gray-400">{{ t('keys.total') }}:</span>
                 <span class="font-medium text-gray-900 dark:text-white">
-                  ${{ (usageStats[row.id]?.total_actual_cost ?? 0).toFixed(4) }}
+                  {{ usageStats[row.id] ? '$' + usageStats[row.id].total_actual_cost.toFixed(4) : '—' }}
                 </span>
               </div>
+              <span v-if="usageLoading" class="keys-usage-hint">{{ t('common.loading') }}</span>
+              <button v-else-if="usageError" class="keys-usage-retry" @click="loadApiKeys">{{ t('keys.retryUsage') }}</button>
               <!-- Quota progress (if quota is set) -->
               <div v-if="row.quota > 0" class="mt-1.5">
                 <div class="flex items-center gap-1.5">
@@ -391,7 +422,7 @@
           </template>
 
           <template #cell-actions="{ row }">
-            <div class="flex items-center gap-1">
+            <div class="keys-row-actions flex items-center gap-1">
               <!-- Use Key Button -->
               <button
                 @click="openUseKeyModal(row)"
@@ -444,10 +475,11 @@
 
           <template #empty>
             <EmptyState
-              :title="t('keys.noKeysYet')"
-              :description="t('keys.createFirstKey')"
-              :action-text="t('keys.createKey')"
-              @action="showCreateModal = true"
+              :title="hasFilters ? t('keys.noMatchingKeys') : t('keys.noKeysYet')"
+              :description="hasFilters ? t('keys.noMatchingKeysHint') : t('keys.createFirstKey')"
+              :action-text="hasFilters ? t('common.reset') : t('keys.createKey')"
+              :action-icon="!hasFilters"
+              @action="hasFilters ? resetFilters() : showCreateModal = true"
             />
           </template>
         </DataTable>
@@ -455,7 +487,7 @@
 
       <template #pagination>
         <Pagination
-          v-if="pagination.total > 0"
+          v-if="pagination.total > 0 && !loadError"
           :page="pagination.page"
           :total="pagination.total"
           :page-size="pagination.page_size"
@@ -1374,6 +1406,9 @@ const handleBulkUpdated = (succeededIds: number[]) => {
 
 const groups = ref<Group[]>([])
 const loading = ref(false)
+const loadError = ref(false)
+const usageLoading = ref(false)
+const usageError = ref(false)
 const submitting = ref(false)
 const now = ref(new Date())
 let resetTimer: ReturnType<typeof setInterval> | null = null
@@ -1395,6 +1430,14 @@ const sortState = ref({
 const filterSearch = ref('')
 const filterStatus = ref('')
 const filterGroupId = ref<string | number>('')
+const hasFilters = computed(() => !!filterSearch.value || !!filterStatus.value || filterGroupId.value !== '')
+
+const resetFilters = () => {
+  filterSearch.value = ''
+  filterStatus.value = ''
+  filterGroupId.value = ''
+  onFilterChange()
+}
 
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
@@ -1411,6 +1454,11 @@ const groupSelectorKeyId = ref<number | null>(null)
 const publicSettings = ref<PublicSettings | null>(null)
 const dropdownRef = ref<HTMLElement | null>(null)
 const columnDropdownRef = ref<HTMLElement | null>(null)
+const columnTriggerRef = ref<HTMLButtonElement | null>(null)
+const closeColumnSettings = () => {
+  showColumnDropdown.value = false
+  columnTriggerRef.value?.focus()
+}
 const dropdownPosition = ref<{ top?: number; bottom?: number; left: number } | null>(null)
 const groupButtonRefs = ref<Map<number, HTMLElement>>(new Map())
 let abortController: AbortController | null = null
@@ -1589,6 +1637,9 @@ const loadApiKeys = async () => {
   abortController = controller
   const { signal } = controller
   loading.value = true
+  loadError.value = false
+  usageLoading.value = false
+  usageError.value = false
   try {
     // Build filters
     const filters: {
@@ -1612,28 +1663,34 @@ const loadApiKeys = async () => {
     handleSelectionChange(selectedIds.value)
     pagination.value.total = response.total
     pagination.value.pages = response.pages
+    usageStats.value = {}
+    loading.value = false
 
     // Load usage stats for all API keys in the list
     if (response.items.length > 0) {
+      usageLoading.value = true
       const keyIds = response.items.map((k) => k.id)
       try {
         const usageResponse = await usageAPI.getDashboardApiKeysUsage(keyIds, { signal })
         if (signal.aborted) return
         usageStats.value = usageResponse.stats
       } catch (e) {
-        if (!isAbortError(e)) {
+        if (!signal.aborted && !isAbortError(e)) {
+          usageError.value = true
           console.error('Failed to load usage stats:', e)
         }
       }
     }
   } catch (error) {
-    if (isAbortError(error)) {
+    if (signal.aborted || isAbortError(error)) {
       return
     }
-    appStore.showError(t('keys.failedToLoad'))
+    loadError.value = true
+    selectedIds.value = []
   } finally {
     if (abortController === controller) {
       loading.value = false
+      usageLoading.value = false
     }
   }
 }
@@ -2089,7 +2146,36 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  abortController?.abort()
   document.removeEventListener('click', closeGroupSelector)
   if (resetTimer) clearInterval(resetTimer)
 })
 </script>
+
+<style scoped>
+.keys-toolbar, .keys-toolbar-actions { display: flex; align-items: center; gap: 12px; }
+.keys-toolbar { justify-content: space-between; flex-wrap: wrap; }
+.keys-result-count { color: var(--ws-muted); font-size: 13px; }
+.keys-filters { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(140px, 180px) minmax(140px, 180px) auto; align-items: end; gap: 12px; }
+.keys-search, .keys-filter-field { display: block; min-width: 0; }
+.keys-selection { padding: 12px 16px; border: 1px solid var(--ws-border); border-radius: 6px; background: var(--ws-selected); color: var(--ws-text); }
+.keys-name { display: inline-block; max-width: 260px; white-space: normal; overflow-wrap: anywhere; }
+.keys-usage { min-width: 140px; }
+.keys-usage-hint, .keys-usage-retry { font-size: 12px; color: var(--ws-muted); }
+.keys-usage-retry { color: var(--ws-action); text-decoration: underline; text-underline-offset: 3px; }
+.keys-row-actions > button { min-width: 40px; min-height: 44px; white-space: nowrap; }
+.keys-load-error { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 48px 24px; text-align: center; color: var(--ws-muted); }
+.keys-load-error h2 { color: var(--ws-text); font-size: 16px; font-weight: 600; }
+.keys-page :deep(button:focus-visible), .keys-page :deep(input:focus-visible) { outline: 2px solid var(--ws-action); outline-offset: 3px; }
+@media (max-width: 767px) {
+  .keys-filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .keys-search { grid-column: 1 / -1; }
+  .keys-reset { grid-column: 1 / -1; justify-self: start; }
+  .keys-toolbar-actions { gap: 8px; }
+  .keys-name { max-width: 100%; }
+}
+@media (max-width: 479px) {
+  .keys-toolbar-actions { width: 100%; }
+  .keys-toolbar-actions > .btn-primary { margin-left: auto; }
+}
+</style>

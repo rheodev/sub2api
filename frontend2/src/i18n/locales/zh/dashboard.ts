@@ -66,6 +66,12 @@ export default {
 
   // API Keys
   keys: {
+    resultCount: '共 {count} 个密钥',
+    noMatchingKeys: '没有匹配的密钥',
+    noMatchingKeysHint: '试试其他搜索条件，或重置筛选查看全部密钥。',
+    loadErrorHint: '暂时无法获取密钥列表，请重试。',
+    retry: '重新加载',
+    retryUsage: '用量加载失败，重试',
     title: 'API 密钥',
     description: '管理您的 API 密钥和访问令牌',
     searchPlaceholder: '搜索名称或Key...',

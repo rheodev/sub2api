@@ -418,7 +418,7 @@ describe('user KeysView column settings', () => {
     const wrapper = await mountView()
 
     await wrapper.get('button[title="Column Settings"]').trigger('click')
-    await getButtonByText(wrapper, 'Rate Limit').trigger('click')
+    await wrapper.findAll('#keys-column-options label').find((label) => label.text() === 'Rate Limit')!.get('input').setValue(true)
     await nextTick()
 
     expect(visibleColumnKeys(wrapper)).toContain('rate_limit')
@@ -432,7 +432,7 @@ describe('user KeysView column settings', () => {
     const wrapper = await mountView()
 
     await wrapper.get('button[title="Column Settings"]').trigger('click')
-    await getButtonByText(wrapper, 'ID').trigger('click')
+    await wrapper.findAll('#keys-column-options label').find((label) => label.text() === 'ID')!.get('input').setValue(true)
     await nextTick()
 
     expect(visibleColumnKeys(wrapper)).toContain('id')
@@ -451,7 +451,7 @@ describe('user KeysView column settings', () => {
     const wrapper = await mountView()
 
     await wrapper.get('button[title="Column Settings"]').trigger('click')
-    await getButtonByText(wrapper, 'Last Used IP').trigger('click')
+    await wrapper.findAll('#keys-column-options label').find((label) => label.text() === 'Last Used IP')!.get('input').setValue(true)
     await nextTick()
 
     expect(visibleColumnKeys(wrapper)).toContain('last_used_ip')

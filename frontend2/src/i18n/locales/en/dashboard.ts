@@ -66,6 +66,12 @@ export default {
 
   // API Keys
   keys: {
+    resultCount: '{count} API keys',
+    noMatchingKeys: 'No matching keys',
+    noMatchingKeysHint: 'Try another search or reset filters to view all keys.',
+    loadErrorHint: 'The key list is temporarily unavailable. Please try again.',
+    retry: 'Reload',
+    retryUsage: 'Usage unavailable. Retry',
     title: 'API Keys',
     description: 'Manage your API keys and access tokens',
     searchPlaceholder: 'Search name or key...',

@@ -18,7 +18,7 @@ async function prepare(page: Page, role?: string, dark = false, populated = fals
   const publicSettings = { ...settings, ...overrides }
   const currentUser = { ...user, role: role || 'user' }
   await page.addInitScript(({ currentUser, role, settings, dark }) => {
-    localStorage.setItem('sub2api_locale', 'zh')
+    localStorage.setItem('sub2api_locale', localStorage.getItem('sub2api_locale') || 'zh')
     localStorage.setItem('theme', dark ? 'dark' : 'light')
     if (role) {
       localStorage.setItem('auth_token', 'local-ui-test')
@@ -61,6 +61,55 @@ async function capture(page: Page, name: string, project: string) {
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({ path: `.impeccable/review/${name}-${project}.png`, fullPage: true, animations: 'disabled' })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)
+}
+
+for (const dark of [false, true]) {
+  test(`API key filters, recovery and column keyboard controls (${dark ? 'dark' : 'light'})`, async ({ page }, info) => {
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
+    await prepare(page, 'user', dark, true)
+    let failKeys = true
+    let failUsage = true
+    await page.route(/\/api\/v1\/keys(?:\?|$)/, route => {
+      if (failKeys) return route.fulfill({ status: 503, json: { message: 'Preview unavailable' } })
+      const search = new URL(route.request().url()).searchParams.get('search')
+      const items = search ? [] : sampleKeys
+      return route.fulfill({ json: { code: 0, data: { items, total: items.length, page: 1, page_size: 20, pages: items.length ? 1 : 0 } } })
+    })
+    await page.route('**/api/v1/usage/dashboard/api-keys-usage', route => failUsage
+      ? route.fulfill({ status: 503, json: { message: 'Preview unavailable' } })
+      : route.fulfill({ json: { code: 0, data: { stats: { 1: { today_actual_cost: 0.125, total_actual_cost: 2.5 } } } } }))
+    await page.goto('/keys')
+    await expect(page.locator('.keys-load-error')).toBeVisible()
+    await expect(page.getByText('暂无 API 密钥', { exact: true })).toHaveCount(0)
+    failKeys = false
+    await page.locator('.keys-load-error button').click()
+    await expect(page.getByText(sampleKeys[0].name, { exact: true })).toBeVisible()
+    await expect(page.locator('.keys-usage-retry').first()).toBeVisible()
+    failUsage = false
+    await page.locator('.keys-usage-retry').first().click()
+    await expect(page.getByText('$0.1250', { exact: true })).toBeVisible()
+    const columns = page.getByRole('button', { name: '列设置', exact: true })
+    await columns.click()
+    const columnCheckbox = page.locator('#keys-column-options').getByRole('checkbox', { name: '上次使用时间', exact: true })
+    await columnCheckbox.focus()
+    await page.keyboard.press('Space')
+    await expect(columnCheckbox).toBeChecked()
+    await page.keyboard.press('Escape')
+    await expect(columns).toBeFocused()
+    await expect(columns).toHaveAttribute('aria-expanded', 'false')
+    await page.getByRole('textbox', { name: '搜索', exact: true }).fill('no-matching-key')
+    await expect(page.getByText('没有匹配的密钥', { exact: true })).toBeVisible()
+    await capture(page, `keys-filter-empty-${dark ? 'dark' : 'light'}`, info.project.name)
+    await page.locator('.keys-reset').click()
+    await expect(page.getByRole('textbox', { name: '搜索', exact: true })).toHaveValue('')
+    await expect(page.getByText(sampleKeys[0].name, { exact: true })).toBeVisible()
+    await page.evaluate(() => localStorage.setItem('sub2api_locale', 'en'))
+    await page.reload()
+    await expect(page.getByRole('button', { name: 'Create API Key', exact: true }).first()).toBeVisible()
+    await capture(page, `keys-refined-${dark ? 'dark' : 'light'}-en`, info.project.name)
+    expect(errors).toEqual([])
+  })
 }
 
 test('user usage filters, recovery, analysis and keyboard tabs', async ({ page }, info) => {
