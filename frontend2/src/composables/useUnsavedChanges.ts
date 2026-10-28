@@ -2,10 +2,11 @@ import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch, typ
 import { onBeforeRouteLeave, routerKey } from 'vue-router'
 
 /** Keep drafts in memory; never persist credentials or silently submit a form. */
-export function useUnsavedChanges(readDraft: () => unknown, ready: Ref<boolean>) {
+export function useUnsavedChanges(readDraft: () => unknown, ready: Ref<boolean>, additionalDirty?: Ref<boolean>) {
   const baseline = ref<string | null>(null)
   const current = computed(() => JSON.stringify(readDraft()))
-  const dirty = computed(() => ready.value && baseline.value !== null && current.value !== baseline.value)
+  // Independently saved editors must stay dirty when the main form is saved.
+  const dirty = computed(() => ready.value && (additionalDirty?.value || (baseline.value !== null && current.value !== baseline.value)))
   const showLeaveDialog = ref(false)
   let resolveLeave: ((leave: boolean) => void) | undefined
 

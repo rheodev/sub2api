@@ -15,6 +15,8 @@ const {
   getWebSearchEmulationConfig,
   updateWebSearchEmulationConfig,
   getAdminApiKey,
+  regenerateAdminApiKey,
+  deleteAdminApiKey,
   getOverloadCooldownSettings,
   getRateLimit429CooldownSettings,
   updateRateLimit429CooldownSettings,
@@ -43,6 +45,8 @@ const {
   getWebSearchEmulationConfig: vi.fn(),
   updateWebSearchEmulationConfig: vi.fn(),
   getAdminApiKey: vi.fn(),
+  regenerateAdminApiKey: vi.fn(),
+  deleteAdminApiKey: vi.fn(),
   getOverloadCooldownSettings: vi.fn(),
   getRateLimit429CooldownSettings: vi.fn(),
   updateRateLimit429CooldownSettings: vi.fn(),
@@ -90,6 +94,8 @@ vi.mock("@/api", () => ({
       getWebSearchEmulationConfig,
       updateWebSearchEmulationConfig,
       getAdminApiKey,
+      regenerateAdminApiKey,
+      deleteAdminApiKey,
       getOverloadCooldownSettings,
       getRateLimit429CooldownSettings,
       updateRateLimit429CooldownSettings,
@@ -564,6 +570,7 @@ function mountView() {
         ProxySelector: true,
         ImageUpload: ImageUploadStub,
         BackupSettings: true,
+        AdminAccessKeysSettings: true,
       },
     },
   });
@@ -727,6 +734,59 @@ describe("admin SettingsView payment visible method controls", () => {
     });
     fetchPublicSettings.mockResolvedValue(undefined);
     adminSettingsFetch.mockResolvedValue(undefined);
+  });
+
+  it("does not offer or call legacy key creation when no legacy key exists", async () => {
+    regenerateAdminApiKey.mockClear();
+    const wrapper = mountView();
+    await flushPromises();
+    await openSecurityTab(wrapper);
+    expect(wrapper.find('admin-access-keys-settings-stub').exists()).toBe(true);
+    expect(wrapper.find('details').exists()).toBe(false);
+    await wrapper.vm.createAdminApiKey();
+    expect(regenerateAdminApiKey).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  it.each(["rotate", "delete"])("retries legacy key %s only after step-up verification", async (action) => {
+    getAdminApiKey.mockResolvedValue({ exists: true, masked_key: "legacy…1234" });
+    const request = action === "rotate" ? regenerateAdminApiKey : deleteAdminApiKey;
+    request.mockReset().mockRejectedValueOnce({ reason: "STEP_UP_REQUIRED" })
+      .mockResolvedValueOnce(action === "rotate" ? { key: "rotated-legacy-key" } : {});
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const wrapper = mountView();
+    try {
+      await flushPromises();
+      await openSecurityTab(wrapper);
+      expect(wrapper.find('details').exists()).toBe(true);
+      const pending = action === "rotate" ? wrapper.vm.regenerateAdminApiKey() : wrapper.vm.deleteAdminApiKey();
+      await flushPromises();
+      expect(wrapper.vm.settingsStepUp.visible.value).toBe(true);
+      expect(request).toHaveBeenCalledTimes(1);
+      wrapper.vm.settingsStepUp.onVerified();
+      await pending;
+      expect(request).toHaveBeenCalledTimes(2);
+      expect(wrapper.vm.adminApiKeyExists).toBe(action === "rotate");
+    } finally { confirm.mockRestore(); wrapper.unmount(); }
+  });
+
+  it("cancels legacy key step-up without deleting or reporting an error", async () => {
+    getAdminApiKey.mockResolvedValue({ exists: true, masked_key: "legacy…1234" });
+    deleteAdminApiKey.mockReset().mockRejectedValueOnce({ reason: "STEP_UP_REQUIRED" });
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const wrapper = mountView();
+    try {
+      await flushPromises();
+      showError.mockClear();
+      const pending = wrapper.vm.deleteAdminApiKey();
+      await flushPromises();
+      wrapper.vm.settingsStepUp.onCancel();
+      await pending;
+      expect(deleteAdminApiKey).toHaveBeenCalledTimes(1);
+      expect(wrapper.vm.adminApiKeyExists).toBe(true);
+      expect(showError).not.toHaveBeenCalled();
+      expect(wrapper.vm.adminApiKeyOperating).toBe(false);
+    } finally { confirm.mockRestore(); wrapper.unmount(); }
   });
 
   it("loads and saves the open button visibility for each custom menu", async () => {
@@ -1397,6 +1457,7 @@ describe("admin SettingsView payment visible method controls", () => {
           ProxySelector: true,
           ImageUpload: ImageUploadStub,
           BackupSettings: true,
+        AdminAccessKeysSettings: true,
         },
       },
     });
@@ -1747,6 +1808,7 @@ describe("admin SettingsView payment visible method controls", () => {
           ProxySelector: true,
           ImageUpload: ImageUploadStub,
           BackupSettings: true,
+        AdminAccessKeysSettings: true,
         },
       },
     });

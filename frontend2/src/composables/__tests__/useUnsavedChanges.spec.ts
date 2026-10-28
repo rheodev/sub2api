@@ -7,9 +7,10 @@ import { useUnsavedChanges } from '../useUnsavedChanges'
 async function setup() {
   const draft = ref('loaded')
   const ready = ref(false)
+  const additionalDirty = ref(false)
   let guard!: ReturnType<typeof useUnsavedChanges>
   const Editor = defineComponent({ setup() {
-    guard = useUnsavedChanges(() => draft.value, ready)
+    guard = useUnsavedChanges(() => draft.value, ready, additionalDirty)
     return () => h('input')
   } })
   const router = createRouter({ history: createMemoryHistory(), routes: [
@@ -20,7 +21,7 @@ async function setup() {
   await router.isReady()
   ready.value = true
   await flushPromises()
-  return { draft, ready, guard, router, wrapper }
+  return { draft, ready, additionalDirty, guard, router, wrapper }
 }
 
 describe('useUnsavedChanges', () => {
@@ -64,4 +65,29 @@ describe('useUnsavedChanges', () => {
     expect(clean.defaultPrevented).toBe(false)
     wrapper.unmount()
   })
+  it('keeps independently saved drafts protected after the main form is saved', async () => {
+    const { draft, additionalDirty, guard, router, wrapper } = await setup()
+    draft.value = 'main form saved'
+    additionalDirty.value = true
+    await guard.markSaved()
+    expect(guard.dirty.value).toBe(true)
+    const event = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(true)
+    const leaving = router.push('/other')
+    await flushPromises()
+    expect(guard.showLeaveDialog.value).toBe(true)
+    guard.confirmLeave(false)
+    await leaving
+    expect(router.currentRoute.value.path).toBe('/')
+    additionalDirty.value = false
+    expect(guard.dirty.value).toBe(false)
+    const clean = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(clean)
+    expect(clean.defaultPrevented).toBe(false)
+    await router.push('/other')
+    expect(router.currentRoute.value.path).toBe('/other')
+    wrapper.unmount()
+  })
+
 })

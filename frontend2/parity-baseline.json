@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "dba770d56a0ee0ae5bad1b3dc5e11614d323163c",
+  "sourceCommit": "f6959612f6c923bc022cd1196f2e2999cf52ecdb",
   "routes": [
     "/setup",
     "/home",
@@ -69,6 +69,7 @@
   "runtimeFiles": [
     "src/App.vue",
     "src/api/admin/accounts.ts",
+    "src/api/admin/adminAccessKeys.ts",
     "src/api/admin/affiliates.ts",
     "src/api/admin/announcements.ts",
     "src/api/admin/antigravity.ts",
@@ -149,6 +150,7 @@
     "src/components/account/CreateAccountModal.vue",
     "src/components/account/EditAccountModal.vue",
     "src/components/account/GrokBaseUrlPresets.vue",
+    "src/components/account/GrokModelDiagnosticsPanel.vue",
     "src/components/account/GrokQuotaProbeCell.vue",
     "src/components/account/HeaderOverrideEditor.vue",
     "src/components/account/HeaderOverrideJsonTools.vue",
@@ -216,6 +218,7 @@
     "src/components/admin/payment/PaymentMethodChart.vue",
     "src/components/admin/payment/TopUsersLeaderboard.vue",
     "src/components/admin/proxy/ImportDataModal.vue",
+    "src/components/admin/settings/AdminAccessKeysSettings.vue",
     "src/components/admin/settings/RechargeBonusTierEditor.vue",
     "src/components/admin/subscription/BulkSubscriptionActionDialog.vue",
     "src/components/admin/subscription/bulkSubscriptionOperation.ts",
@@ -415,6 +418,7 @@
     "src/i18n/locales/en/admin/promptAudit.ts",
     "src/i18n/locales/en/admin/resources.ts",
     "src/i18n/locales/en/admin/settings.ts",
+    "src/i18n/locales/en/adminAccessKeys.ts",
     "src/i18n/locales/en/batchImage.ts",
     "src/i18n/locales/en/channelMonitorV2.ts",
     "src/i18n/locales/en/common.ts",
@@ -432,6 +436,7 @@
     "src/i18n/locales/zh/admin/promptAudit.ts",
     "src/i18n/locales/zh/admin/resources.ts",
     "src/i18n/locales/zh/admin/settings.ts",
+    "src/i18n/locales/zh/adminAccessKeys.ts",
     "src/i18n/locales/zh/batchImage.ts",
     "src/i18n/locales/zh/channelMonitorV2.ts",
     "src/i18n/locales/zh/common.ts",
@@ -610,7 +615,8 @@
     "src/vite-env.d.ts"
   ],
   "contracts": {
-    "src/api/admin/accounts.ts": "a1b6017bb70f57c4110311f2d43cc4d22c30c7a42e9c17770dcc090c2212b512",
+    "src/api/admin/accounts.ts": "e225230816da0d2d2bbfd6d730440473be18f61d4693cdf793760c764572ab73",
+    "src/api/admin/adminAccessKeys.ts": "88d51dcdda6db7d7b2bfc31b394202e838fc024694147feb7937e2df00a2f4fa",
     "src/api/admin/affiliates.ts": "33576d035f72af63be983554cf8bdbf7ef2e285bf836126a9a7485e4ca8f5267",
     "src/api/admin/announcements.ts": "115b1daebf212883dda0f047ff039b4648204a9dc676202edcc978e97665f618",
     "src/api/admin/antigravity.ts": "c29ac9a65b66d8b6049b8bba9834a081e310529b6b9cc61dd134bfd0fc77f615",
@@ -678,7 +684,7 @@
     "src/router/index.ts": "7e4c1e51ed5346622ee1302098e96fb90792a9980d4490fac7fd7476d6f1be29",
     "src/router/title.ts": "d4a2347341709453121e8adf0accbf4b855167f0058e12ad3682923e5171a679",
     "src/types/global.d.ts": "e3038a5590279d22dcf37e9e31656e7c49e472b60afecbd9d367fff4cf66005c",
-    "src/types/index.ts": "0bfb907a99d6cb83166f6f9521e7d943c4611349174cc8954b36f606c3c76494",
+    "src/types/index.ts": "1073bfb46fb6eb046e4e57bbf46a61040aa2f6cc88208aa0e98c6befdf8359d8",
     "src/types/openaiReferrals.ts": "acec0bd873a78a5c649979816a8f05d16439cf66cd789f9f94966a09240f5080",
     "src/types/payment.ts": "e8d181d8e23faf7b6bc41b011f39858afad3b481f56d3296ff46217101d4cb47",
     "src/utils/featureFlags.ts": "f4d1223c8dc0c69e9c45d43d21d347f0d88bf6fdc875a5a8aa1b8aa2a5c84453",

@@ -289,6 +289,7 @@ const paymentMethodsHref = computed(() =>
 );
 
 const activeTab = ref<SettingsTab>("general");
+const adminKeyDraftDirty = ref(false);
 const visitedSettingsTabs = ref(new Set<SettingsTab>(["general"]));
 
 const settingsTabs = [
@@ -3119,15 +3120,17 @@ async function loadAdminApiKey() {
 }
 
 async function createAdminApiKey() {
+  if (!adminApiKeyExists.value) return;
   adminApiKeyOperating.value = true;
   try {
-    const result = await adminAPI.settings.regenerateAdminApiKey();
+    const result = await settingsStepUp.run(() => adminAPI.settings.regenerateAdminApiKey());
     newAdminApiKey.value = result.key;
     adminApiKeyExists.value = true;
     adminApiKeyMasked.value =
       result.key.substring(0, 10) + "..." + result.key.slice(-4);
     appStore.showSuccess(t("admin.settings.adminApiKey.keyGenerated"));
   } catch (error: unknown) {
+    if (isStepUpCancelled(error)) return;
     appStore.showError(extractApiErrorMessage(error, t("common.error")));
   } finally {
     adminApiKeyOperating.value = false;
@@ -3143,12 +3146,13 @@ async function deleteAdminApiKey() {
   if (!confirm(t("admin.settings.adminApiKey.deleteConfirm"))) return;
   adminApiKeyOperating.value = true;
   try {
-    await adminAPI.settings.deleteAdminApiKey();
+    await settingsStepUp.run(() => adminAPI.settings.deleteAdminApiKey());
     adminApiKeyExists.value = false;
     adminApiKeyMasked.value = "";
     newAdminApiKey.value = "";
     appStore.showSuccess(t("admin.settings.adminApiKey.keyDeleted"));
   } catch (error: unknown) {
+    if (isStepUpCancelled(error)) return;
     appStore.showError(extractApiErrorMessage(error, t("common.error")));
   } finally {
     adminApiKeyOperating.value = false;
@@ -4005,7 +4009,7 @@ const draftGuard = useUnsavedChanges(() => ({
   registrationEmailSuffixWhitelistTags: registrationEmailSuffixWhitelistTags.value,
   registrationEmailSuffixWhitelistDraft: registrationEmailSuffixWhitelistDraft.value,
   forwardedClientIpHeaderDraft: forwardedClientIpHeaderDraft.value,
-}), computed(() => !loading.value && !loadFailed.value));
+}), computed(() => !loading.value && !loadFailed.value), adminKeyDraftDirty);
 
 onMounted(() => {
   loadSettings();
@@ -4329,6 +4333,7 @@ watch(
 );
 
 return {
+adminKeyDraftDirty,
 draftGuard,
 settingsDirty: draftGuard.dirty,
 showLeaveDialog: draftGuard.showLeaveDialog,

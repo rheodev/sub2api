@@ -728,3 +728,121 @@ test('mobile navigation traps focus and restores the trigger', async ({ page }, 
   await expect(trigger).toBeFocused()
   await expect(page.locator('aside')).toHaveAttribute('inert', '')
 })
+
+for (const dark of [false, true]) {
+  test(`upstream sync: permission key creation and Grok diagnostics (${dark ? 'dark' : 'light'})`, async ({ page }, info) => {
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
+    await prepare(page, 'admin', dark, true)
+    const permission = { id: 'accounts.read', label: '读取账户', category: '账户', scope: 'account' }
+    const secret = `adm_sc_local_preview_${'test'.repeat(20)}`
+    let input: Record<string, unknown> | undefined
+    await page.route(/\/api\/v1\/admin\/settings\/admin-api-key(?:\?|$)/, route => route.fulfill({ json: { code: 0, data: { exists: false, masked_key: '' } } }))
+    await page.route(/\/api\/v1\/admin\/settings\/admin-api-keys(?:\?|$)/, async route => {
+      if (route.request().method() === 'POST') {
+        input = route.request().postDataJSON()
+        await route.fulfill({ json: { code: 0, data: { key: secret, item: { ...input, id: 'preview-key', key_prefix: 'adm_sc_local', created_at: timestamp, updated_at: timestamp, revoked_at: null } } } })
+      } else await route.fulfill({ json: { code: 0, data: { items: [], permissions: [permission] } } })
+    })
+    await page.goto('/admin/settings')
+    await page.locator('#settings-tab-security').click()
+    await expect(page.getByRole('heading', { name: '管理员访问密钥' })).toBeVisible()
+    await expect(page.locator('.settings-section:visible details')).toHaveCount(0)
+    await page.locator('[data-test="create"]').click()
+    await page.locator('[data-test="name"]').fill('本地自动化测试密钥')
+    await page.locator('input[value="accounts.read"]').check()
+    await capture(page, `sync-access-key-form-${dark ? 'dark' : 'light'}`, info.project.name)
+    await page.locator('[data-test="save"]').click()
+    await expect(page.locator('code').filter({ hasText: secret })).toBeVisible()
+    expect(input?.policy).toMatchObject({ rules: [expect.objectContaining({ permissions: ['accounts.read'], group_ids: [], all_groups: false })], global_permissions: [] })
+    await capture(page, `sync-access-key-secret-${dark ? 'dark' : 'light'}`, info.project.name)
+    await page.locator('[data-test="dismiss-secret"]').click()
+    await expect(page.locator('code').filter({ hasText: secret })).toHaveCount(0)
+
+    const account = { ...sampleAccounts[0], platform: 'grok', credentials: { base_url: 'https://api.x.ai/v1', model_mapping: { 'grok-4': 'grok-4' } }, grok_model_diagnostics: {
+      state: 'fresh', endpoint: 'https://api.x.ai/v1/models', fetched_at: new Date().toISOString(), expires_at: new Date(Date.now() + 3600000).toISOString(), models: ['grok-4', 'grok-4-fast'], mappings: [{ requested: 'grok-4', upstream: 'grok-4', status: 'listed' }],
+    } }
+    await page.route('**/api/v1/admin/accounts?**', route => route.fulfill({ json: { code: 0, data: { items: [account], total: 1, page: 1, page_size: 20, pages: 1 } } }))
+    await page.route(/\/api\/v1\/admin\/accounts\/1(?:\?|$)/, route => route.fulfill({ json: { code: 0, data: account } }))
+    await page.goto('/admin/accounts')
+    await page.getByRole('button', { name: '编辑', exact: true }).first().click()
+    await expect(page.getByTestId('grok-model-diagnostics')).toBeVisible()
+    await expect(page.getByTestId('grok-diagnostics-sync')).toBeVisible()
+    await expect(page.getByTestId('sync-upstream-models')).toHaveCount(0)
+    await page.getByTestId('grok-model-diagnostics').scrollIntoViewIfNeeded()
+    await expect(page.getByTestId('grok-model-diagnostics')).toBeInViewport()
+    await capture(page, `sync-grok-diagnostics-${dark ? 'dark' : 'light'}`, info.project.name)
+    expect(errors).toEqual([])
+  })
+}
+
+test('permission key editor isolates Enter from system settings submission', async ({ page }) => {
+  await prepare(page, 'admin')
+  let settingsWrites = 0
+  let keyWrites = 0
+  await page.route(/\/api\/v1\/admin\/settings\/admin-api-keys(?:\?|$)/, async route => {
+    if (route.request().method() !== 'GET') keyWrites++
+    await route.fulfill({ json: { code: 0, data: { items: [], permissions: [] } } })
+  })
+  await page.route(/\/api\/v1\/admin\/settings(?:\?|$)/, async route => {
+    if (route.request().method() === 'PUT') {
+      settingsWrites++
+      await route.fulfill({ json: { code: 0, data: { ...settings, ...route.request().postDataJSON() } } })
+    } else await route.fallback()
+  })
+  await page.goto('/admin/settings')
+  await page.locator('#settings-tab-security').click()
+  await page.locator('[data-test="create"]').click()
+  await page.locator('[data-test="name"]').fill('独立的密钥草稿')
+  await page.locator('[data-test="name"]').press('Enter')
+  await page.waitForLoadState('networkidle')
+  expect(settingsWrites).toBe(0)
+  expect(keyWrites).toBe(0)
+  await expect(page.locator('[data-test="name"]')).toHaveValue('独立的密钥草稿')
+  // Textareas retain their native multiline editing behavior.
+  const notes = page.getByRole('textbox', { name: '备注', exact: true })
+  await notes.fill('第一行')
+  await notes.press('End')
+  await notes.press('Enter')
+  await notes.pressSequentially('第二行')
+  await expect(notes).toHaveValue('第一行\n第二行')
+})
+
+test('permission key drafts survive global saves and guard navigation', async ({ page }, info) => {
+  await prepare(page, 'admin')
+  await page.route(/\/api\/v1\/admin\/settings\/admin-api-keys(?:\?|$)/, route => route.fulfill({ json: { code: 0, data: { items: [], permissions: [] } } }))
+  await page.route(/\/api\/v1\/admin\/settings(?:\?|$)/, async route => {
+    if (route.request().method() === 'PUT') await route.fulfill({ json: { code: 0, data: { ...settings, ...route.request().postDataJSON() } } })
+    else await route.fallback()
+  })
+  await page.goto('/admin/settings')
+  await page.locator('#settings-tab-security').click()
+  await page.locator('[data-test="create"]').click()
+  const status = page.locator('.settings-save-bar [role="status"]')
+  const name = page.locator('[data-test="name"]')
+  await expect(status).toHaveText('设置已同步')
+  await name.fill('未保存的密钥')
+  await expect(status).toHaveText('有未保存的更改')
+  await name.fill('')
+  await expect(status).toHaveText('设置已同步')
+  await name.fill('未保存的密钥')
+  await page.locator('#settings-tab-general').click()
+  await page.getByRole('textbox', { name: '站点名称', exact: true }).fill('Updated workspace')
+  await page.getByRole('button', { name: '保存设置', exact: true }).click()
+  await expect(page.getByRole('button', { name: '保存设置', exact: true })).toBeEnabled()
+  await expect(status).toHaveText('有未保存的更改')
+  await page.locator('#settings-tab-security').click()
+  await expect(name).toHaveValue('未保存的密钥')
+  async function navigate() {
+    if (info.project.name === 'mobile') await page.locator('header button.lg\\:hidden').first().click()
+    await page.locator('aside a[href="/admin/accounts"]').click()
+  }
+  await navigate()
+  await expect(page.getByRole('button', { name: '继续编辑', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: '继续编辑', exact: true }).click()
+  await expect(name).toHaveValue('未保存的密钥')
+  await expect(page).toHaveURL(/\/admin\/settings/)
+  await navigate()
+  await page.getByRole('button', { name: '放弃更改并离开', exact: true }).click()
+  await expect(page).toHaveURL(/\/admin\/accounts/)
+})
