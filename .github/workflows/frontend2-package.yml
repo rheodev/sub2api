@@ -33,6 +33,7 @@ jobs:
         run: |
           echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
           echo "version=frontend2-$(date -u +%Y%m%d).${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "app_version=$(tr -d '\r\n' < backend/cmd/server/VERSION)" >> "$GITHUB_OUTPUT"
           echo "revision=frontend2-sha-${GITHUB_SHA:0:12}" >> "$GITHUB_OUTPUT"
           echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
       - uses: docker/setup-qemu-action@v4
@@ -46,7 +47,7 @@ jobs:
           tags: sub2api:frontend2-smoke
           build-args: |
             FRONTEND_APP=frontend2
-            VERSION=${{ steps.image.outputs.version }}
+            VERSION=${{ steps.image.outputs.app_version }}
             COMMIT=${{ github.sha }}
             DATE=${{ steps.image.outputs.created }}
             GOPROXY=https://proxy.golang.org,direct
@@ -116,7 +117,7 @@ jobs:
             org.opencontainers.image.created=${{ steps.image.outputs.created }}
           build-args: |
             FRONTEND_APP=frontend2
-            VERSION=${{ steps.image.outputs.version }}
+            VERSION=${{ steps.image.outputs.app_version }}
             COMMIT=${{ github.sha }}
             DATE=${{ steps.image.outputs.created }}
             GOPROXY=https://proxy.golang.org,direct
